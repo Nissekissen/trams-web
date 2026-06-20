@@ -1,0 +1,99 @@
+<div class="page-header">
+  <div>
+    <div class="eyebrow">Hem</div>
+    <h1>Trams</h1>
+  </div>
+  <a href="/trams/new" class="btn btn-secondary">+ Ny spårvagn</a>
+</div>
+
+<form method="get" action="/" class="card" style="margin-bottom:1.75rem;">
+  <label for="user_id">Användare</label>
+  <select id="user_id" name="user_id" onchange="this.form.submit()" required>
+    <option value="">Välj användare</option>
+    <% @users.each do |user| %>
+      <option value="<%= user.id %>" <%= 'selected' if @selected_user_id == user.id %>>
+        <%= h(user.name) %>
+      </option>
+    <% end %>
+  </select>
+  <p class="field-hint"><a href="/users/new">+ Ny användare</a></p>
+</form>
+
+<% if @selected_user_id.nil? %>
+  <div class="empty-state">
+    <p>Välj en användare ovan för att logga resor och se din statistik.</p>
+  </div>
+<% else %>
+  <div class="card">
+    <h2>Logga en resa</h2>
+    <form method="post" action="/rides">
+      <input type="hidden" name="user_id" value="<%= @selected_user_id %>">
+
+      <label for="tram_id">Spårvagn</label>
+      <select id="tram_id" name="tram_id" required>
+        <option value="">Välj spårvagn</option>
+        <% @models.each do |model| %>
+          <optgroup label="<%= h(model.name) %>">
+            <% model.trams.sort_by(&:number).each do |tram| %>
+              <option value="<%= tram.id %>">
+                <%= h(tram.number) %><% if tram.name.present? %> · <%= h(tram.name) %><% end %>
+              </option>
+            <% end %>
+          </optgroup>
+        <% end %>
+      </select>
+
+      <label for="line">Linje</label>
+      <select id="line" name="line" required>
+        <option value="">Välj linje</option>
+        <% Ride::LINES.each do |line| %>
+          <option value="<%= line %>"><%= line %></option>
+        <% end %>
+      </select>
+
+      <label for="ridden_on">Datum</label>
+      <input type="date" id="ridden_on" name="ridden_on" value="<%= Date.today %>" required>
+
+      <div class="form-actions">
+        <button type="submit" class="btn">Logga resa</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="card stat" style="margin-bottom:1rem;">
+    <div class="stat-value"><%= @ride_count %></div>
+    <div class="stat-label">Resor gjorda</div>
+  </div>
+
+  <div class="card">
+    <div class="progress-header">
+      <h3>Linjer</h3>
+      <span class="muted"><%= @ridden_lines.size %>/<%= Ride::LINES.size %></span>
+    </div>
+    <div class="line-pills">
+      <% Ride::LINES.each do |line| %>
+        <% color = Ride.color_for(line) %>
+        <div class="line-pill<%= ' line-pill-pending' unless @ridden_lines.include?(line) %>"
+             style="background: <%= color[:bg] %>; color: <%= color[:text] %>;">
+          <%= line %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <% @models.each do |model| %>
+    <% total = model.trams.size %>
+    <% next if total.zero? %>
+    <% ridden  = model.trams.count { |tram| @ridden_tram_ids.include?(tram.id) } %>
+    <% percent = (ridden.to_f / total * 100).round %>
+    <div class="card">
+      <div class="progress-header">
+        <h3><%= h(model.name) %></h3>
+        <span class="muted"><%= ridden %>/<%= total %> (<%= percent %>%)</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-bar-fill" style="width: <%= percent %>%;"></div>
+      </div>
+    </div>
+  <% end %>
+<% end %>

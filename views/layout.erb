@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Trams</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="layout">
+    <header class="topbar">
+      <div class="brand">Trams<span class="dot">.</span></div>
+      <nav>
+        <a href="/">Hem</a>
+        <a href="/trams">Spårvagnar</a>
+        <a href="/rides">Resor</a>
+      </nav>
+    </header>
+
+    <aside class="sidebar">
+      <div class="brand">Trams<span class="dot">.</span></div>
+      <ul class="nav-list">
+        <li><a href="/" class="<%= 'active' if nav_active?('/') %>">Hem</a></li>
+        <li><a href="/trams" class="<%= 'active' if nav_active?('/trams') %>">Spårvagnar</a></li>
+        <li><a href="/rides" class="<%= 'active' if nav_active?('/rides') %>">Resor</a></li>
+      </ul>
+    </aside>
+
+    <main class="content">
+      <%= yield %>
+    </main>
+  </div>
+</body>
+</html>

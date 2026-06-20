@@ -1,0 +1,16 @@
+<div class="page-header">
+  <div>
+    <div class="eyebrow">Spårvagnar</div>
+    <h1>Ny spårvagn</h1>
+  </div>
+</div>
+
+<div class="card">
+  <form method="post" action="/trams">
+    <%= erb :'trams/_form' %>
+    <div class="form-actions">
+      <button type="submit" class="btn">Spara spårvagn</button>
+      <a href="/trams" class="btn btn-secondary">Avbryt</a>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,21 @@
+<div class="page-header">
+  <div>
+    <div class="eyebrow">Modeller</div>
+    <h1>Ny modell</h1>
+  </div>
+</div>
+
+<div class="card">
+  <form method="post" action="/models">
+    <label for="name">Namn</label>
+    <input type="text" id="name" name="name" value="<%= h(@model.name) %>" required autofocus>
+
+    <label for="description">Beskrivning (valfritt)</label>
+    <textarea id="description" name="description"><%= h(@model.description) %></textarea>
+
+    <div class="form-actions">
+      <button type="submit" class="btn">Spara modell</button>
+      <a href="/trams" class="btn btn-secondary">Avbryt</a>
+    </div>
+  </form>
+</div>

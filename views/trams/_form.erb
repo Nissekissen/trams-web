@@ -1,0 +1,16 @@
+<label for="number">Nummer</label>
+<input type="text" id="number" name="number" value="<%= h(@tram.number) %>" required autofocus>
+
+<label for="name">Namn (valfritt)</label>
+<input type="text" id="name" name="name" value="<%= h(@tram.name) %>">
+
+<label for="model_id">Modell</label>
+<select id="model_id" name="model_id" required>
+  <option value="">Välj modell</option>
+  <% @models.each do |model| %>
+    <option value="<%= model.id %>" <%= 'selected' if @tram.model_id == model.id %>><%= h(model.name) %></option>
+  <% end %>
+</select>
+
+<label for="description">Beskrivning (valfritt)</label>
+<textarea id="description" name="description"><%= h(@tram.description) %></textarea>
