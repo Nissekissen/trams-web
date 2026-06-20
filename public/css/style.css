@@ -399,6 +399,7 @@ fieldset legend {
   padding-top: 0.15rem;
 }
 .log-entry .log-body { flex: 1; }
+.log-entry form { flex-shrink: 0; align-self: flex-start; }
 .log-entry .log-body .date { font-size: 0.82rem; color: var(--color-muted); }
 
 .list-row { padding: 0.6rem 0; border-bottom: 1px solid var(--color-line); }

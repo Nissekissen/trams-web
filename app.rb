@@ -164,4 +164,9 @@ class TramsApp < Sinatra::Base
       erb :index
     end
   end
+
+  delete '/rides/:id' do
+    Ride.find(params['id']).destroy
+    redirect '/rides'
+  end
 end
