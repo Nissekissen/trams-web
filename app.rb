@@ -97,6 +97,11 @@ class TramsApp < Sinatra::Base
     end
   end
 
+  delete '/trams/:id' do
+    Tram.find(params['id']).destroy
+    redirect '/trams'
+  end
+
   # ---------------------------------------------------------------
   # Models
   # ---------------------------------------------------------------
