@@ -46,3 +46,18 @@ namespace :db do
     end
   end
 end
+
+namespace :trams do
+  desc 'Bulk-create trams numbered start..finish for an existing model (usage: rake "trams:bulk_add[501,530,M32]")'
+  task :bulk_add, [:start_number, :end_number, :model_name] do |_, args|
+    start_number = Integer(args[:start_number])
+    end_number   = Integer(args[:end_number])
+    model        = Model.find_by!(name: args[:model_name])
+
+    (start_number..end_number).each do |number|
+      Tram.create!(number: number.to_s, model: model)
+    end
+
+    puts "Skapade spårvagnar #{start_number}–#{end_number} för modell \"#{model.name}\"."
+  end
+end
