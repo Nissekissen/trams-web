@@ -60,3 +60,17 @@ Appen saknar inloggning. Om den ska nås över internet och innehåller
 känsligt innehåll, lägg ett lösenordsskydd framför den (t.ex. Basic Auth i
 en reverse proxy, eller kopiera autentiseringsmönstret från middagsboken)
 innan den exponeras.
+
+## Databas setup
+
+Antingen uppdatera WAVA resultat efter varje nytt resultat eller ett specifikt datum
+Poängen ligger under resultat-tabellen
+WAVA beräknare som hjälp-funktion. Tar in en tävling.
+Vi behöver en tabell för WAVA åldersfaktorer
+Hjälpfunktion för födelsedatum till ålder
+
+Funktionnärsuppdrag
+
+Börja utan permissions - alla kan lägga till tävlingar.
+Skapa användaren från en färdig lista, skriva översättningsverktyg
+När de loggar in första gången - välj lösenord
