@@ -51,16 +51,25 @@
 
       <script>
         window.tramsApp = window.tramsApp || {};
+
+        (function () {
+          var tramSelect = document.getElementById('tram_id');
+          tramsApp.allTramOptions = Array.prototype.slice.call(
+            tramSelect.querySelectorAll('option[data-model-id]')
+          );
+        })();
+
         tramsApp.filterTramsByModel = function () {
           var modelId = document.getElementById('model_id').value;
           var tramSelect = document.getElementById('tram_id');
-          var options = tramSelect.querySelectorAll('option[data-model-id]');
 
-          console.log(options)
-
-          options.forEach(function (option) {
-            option.hidden = option.dataset.modelId !== modelId;
+          tramSelect.querySelectorAll('option[data-model-id]').forEach(function (option) {
+            option.remove();
           });
+
+          tramsApp.allTramOptions
+            .filter(function (option) { return option.dataset.modelId === modelId; })
+            .forEach(function (option) { tramSelect.appendChild(option); });
 
           tramSelect.value = '';
           tramSelect.disabled = !modelId;
