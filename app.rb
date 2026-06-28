@@ -97,6 +97,22 @@ class TramsApp < Sinatra::Base
     end
   end
 
+  get '/trams/:id/edit' do
+    @tram   = Tram.find(params['id'])
+    @models = Model.ordered
+    erb :'trams/edit'
+  end
+
+  put '/trams/:id' do
+    @tram = Tram.find(params['id'])
+    if @tram.update(tram_params)
+      redirect '/trams'
+    else
+      @models = Model.ordered
+      erb :'trams/edit'
+    end
+  end
+
   delete '/trams/:id' do
     Tram.find(params['id']).destroy
     redirect '/trams'

@@ -1,0 +1,17 @@
+<div class="page-header">
+  <div>
+    <div class="eyebrow">Spårvagnar</div>
+    <h1>Redigera spårvagn</h1>
+  </div>
+</div>
+
+<div class="card">
+  <form method="post" action="/trams/<%= @tram.id %>">
+    <input type="hidden" name="_method" value="PUT">
+    <%= erb :'trams/_form' %>
+    <div class="form-actions">
+      <button type="submit" class="btn">Spara ändringar</button>
+      <a href="/trams" class="btn btn-secondary">Avbryt</a>
+    </div>
+  </form>
+</div>

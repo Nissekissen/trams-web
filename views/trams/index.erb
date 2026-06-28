@@ -44,11 +44,14 @@
               </h3>
               <% if tram.description.present? %><p class="muted"><%= h(tram.description) %></p><% end %>
             </div>
-            <form method="post" action="/trams/<%= tram.id %>" class="inline"
-                  onsubmit="return confirm('Ta bort spårvagn <%= h(tram.number) %>? Detta går inte att ångra.');">
-              <input type="hidden" name="_method" value="DELETE">
-              <button type="submit" class="btn btn-danger btn-sm">Ta bort</button>
-            </form>
+            <div class="form-actions" style="margin-top:0;">
+              <a href="/trams/<%= tram.id %>/edit" class="btn btn-secondary btn-sm">Redigera</a>
+              <form method="post" action="/trams/<%= tram.id %>" class="inline"
+                    onsubmit="return confirm('Ta bort spårvagn <%= h(tram.number) %>? Detta går inte att ångra.');">
+                <input type="hidden" name="_method" value="DELETE">
+                <button type="submit" class="btn btn-danger btn-sm">Ta bort</button>
+              </form>
+            </div>
           </div>
         <% end %>
       </div>
