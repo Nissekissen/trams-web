@@ -425,6 +425,76 @@ table.plain th, table.plain td {
 }
 table.plain th { color: var(--color-muted); font-weight: 500; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
 
+/* ---------- Public trams browse ---------- */
+
+.model-section {
+  margin-bottom: 2.5rem;
+}
+
+.model-section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+.model-section-header h2 { margin-bottom: 0; }
+
+.model-description {
+  font-size: 0.88rem;
+  margin-bottom: 0.85rem;
+}
+
+.tram-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.tram-card {
+  position: relative;
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  padding: 0.75rem 0.5rem;
+  text-align: center;
+  cursor: default;
+}
+
+.tram-card--ridden {
+  background: var(--color-accent-soft);
+  border-color: var(--color-accent);
+}
+
+.tram-card-number {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--color-ink);
+}
+
+.tram-card--ridden .tram-card-number {
+  color: var(--color-accent);
+}
+
+.tram-card-name {
+  font-size: 0.72rem;
+  color: var(--color-muted);
+  margin-top: 0.15rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tram-card-ridden {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font-size: 0.65rem;
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
 /* ---------- Model filter (trams index) ---------- */
 
 .model-filter {

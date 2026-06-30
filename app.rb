@@ -1,9 +1,12 @@
 # app.rb
 require_relative 'config/environment'
 require 'sinatra/base'
+require 'sinatra/namespace'
 require 'securerandom'
 
 class TramsApp < Sinatra::Base
+  register Sinatra::Namespace
+
   configure do
     set :views, File.join(ROOT, 'views')
     set :public_folder, File.join(ROOT, 'public')
@@ -72,55 +75,75 @@ class TramsApp < Sinatra::Base
   # ---------------------------------------------------------------
   # Trams
   # ---------------------------------------------------------------
+  namespace '/admin' do
+
+    before '/*' do
+      require_login
+      p current_user.is_admin
+      redirect '/' unless current_user.is_admin
+    end
+
+    get '/trams' do
+      @models = Model.ordered
+      @selected_model_ids = if params['filtered']
+                              Array(params['model_ids']).map(&:to_i)
+                            else
+                              @models.map(&:id)
+                            end
+      @trams_by_model = Tram.where(model_id: @selected_model_ids)
+                            .includes(:model)
+                            .order(:number)
+                            .group_by(&:model)
+      erb :'admin/trams/index'
+    end
+
+    get '/trams/new' do
+      @tram   = Tram.new
+      @models = Model.ordered
+      erb :'admin/trams/new'
+    end
+
+    post '/trams' do
+      @tram = Tram.new(tram_params)
+      if @tram.save
+        redirect '/trams'
+      else
+        @models = Model.ordered
+        erb :'admin/trams/new'
+      end
+    end
+
+    get '/trams/:id/edit' do
+      @tram   = Tram.find(params['id'])
+      @models = Model.ordered
+      erb :'admin/trams/edit'
+    end
+
+    put '/trams/:id' do
+      @tram = Tram.find(params['id'])
+      if @tram.update(tram_params)
+        redirect '/trams'
+      else
+        @models = Model.ordered
+        erb :'admin/trams/edit'
+      end
+    end
+
+    delete '/trams/:id' do
+      Tram.find(params['id']).destroy
+      redirect '/admin/trams'
+    end
+
+  end
+
+  # ---------------------------------------------------------------
+  # Trams (public)
+  # ---------------------------------------------------------------
   get '/trams' do
-    @models = Model.ordered
-    @selected_model_ids = if params['filtered']
-                             Array(params['model_ids']).map(&:to_i)
-                           else
-                             @models.map(&:id)
-                           end
-    @trams_by_model = Tram.where(model_id: @selected_model_ids)
-                           .includes(:model)
-                           .order(:number)
-                           .group_by(&:model)
+    require_login
+    @models          = Model.includes(:trams).order(:name)
+    @ridden_tram_ids = Ride.where(user_id: current_user.id).distinct.pluck(:tram_id).to_set
     erb :'trams/index'
-  end
-
-  get '/trams/new' do
-    @tram   = Tram.new
-    @models = Model.ordered
-    erb :'trams/new'
-  end
-
-  post '/trams' do
-    @tram = Tram.new(tram_params)
-    if @tram.save
-      redirect '/trams'
-    else
-      @models = Model.ordered
-      erb :'trams/new'
-    end
-  end
-
-  get '/trams/:id/edit' do
-    @tram   = Tram.find(params['id'])
-    @models = Model.ordered
-    erb :'trams/edit'
-  end
-
-  put '/trams/:id' do
-    @tram = Tram.find(params['id'])
-    if @tram.update(tram_params)
-      redirect '/trams'
-    else
-      @models = Model.ordered
-      erb :'trams/edit'
-    end
-  end
-
-  delete '/trams/:id' do
-    Tram.find(params['id']).destroy
-    redirect '/trams'
   end
 
   # ---------------------------------------------------------------
