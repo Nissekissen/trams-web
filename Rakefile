@@ -47,6 +47,31 @@ namespace :db do
   end
 end
 
+namespace :users do
+  desc 'Backfill placeholder email and random password for users missing auth credentials'
+  task :backfill_auth do
+    require 'bcrypt'
+
+    users = User.where(email: nil)
+
+    if users.none?
+      puts 'Inga användare behöver backfillas.'
+      next
+    end
+
+    users.each do |u|
+      placeholder_email = "#{u.name.downcase.gsub(/\s+/, '.')}@placeholder.local"
+      u.update_columns(
+        email: placeholder_email,
+        password_digest: BCrypt::Password.create(SecureRandom.hex(32))
+      )
+      puts "Backfillad: #{u.name} → #{placeholder_email}"
+    end
+
+    puts "\nKlart! Uppdatera e-post och lösenord för dessa användare innan de loggar in."
+  end
+end
+
 namespace :trams do
   desc 'Bulk-create trams numbered start..finish for an existing model (usage: rake "trams:bulk_add[501,530,M32]")'
   task :bulk_add, [:start_number, :end_number, :model_name] do |_, args|

@@ -6,28 +6,11 @@
   <a href="/trams/new" class="btn btn-secondary">+ Ny spårvagn</a>
 </div>
 
-<form method="get" action="/" class="card" style="margin-bottom:1.75rem;">
-  <label for="user_id">Användare</label>
-  <select id="user_id" name="user_id" onchange="this.form.submit()" required>
-    <option value="">Välj användare</option>
-    <% @users.each do |user| %>
-      <option value="<%= user.id %>" <%= 'selected' if @selected_user_id == user.id %>>
-        <%= h(user.name) %>
-      </option>
-    <% end %>
-  </select>
-  <p class="field-hint"><a href="/users/new">+ Ny användare</a></p>
-</form>
 
-<% if @selected_user_id.nil? %>
-  <div class="empty-state">
-    <p>Välj en användare ovan för att logga resor och se din statistik.</p>
-  </div>
-<% else %>
   <div class="card">
     <h2>Logga en resa</h2>
     <form method="post" action="/rides">
-      <input type="hidden" name="user_id" value="<%= @selected_user_id %>">
+      <input type="hidden" name="user_id" value="<%= current_user.id %>">
 
       <label for="model_id">Modell</label>
       <select id="model_id" name="model_id" required onchange="tramsApp.filterTramsByModel()">
@@ -131,4 +114,3 @@
       </div>
     </div>
   <% end %>
-<% end %>
