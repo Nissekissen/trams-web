@@ -20,6 +20,18 @@ class TramsApp < Sinatra::Base
       Rack::Utils.escape_html(text.to_s)
     end
 
+    def current_user
+      @current_user ||= User.find_by(id: session[:user_id])
+    end
+
+    def logged_in?
+      !current_user.nil?
+    end
+
+    def require_login
+      redirect '/login' unless logged_in?
+    end
+
     def nav_active?(path)
       path == '/' ? request.path_info == '/' : request.path_info.start_with?(path)
     end
@@ -37,17 +49,11 @@ class TramsApp < Sinatra::Base
     end
 
     def user_params
-      params.slice('name')
+      params.slice('name', 'email', 'password', 'password_confirmation')
     end
 
-    # Everything the homepage needs once a user is (or isn't) selected.
     def load_home_data(user_id)
-      @users  = User.ordered
-      @models = Model.includes(:trams).order(:name)
-      @selected_user_id = user_id
-
-      return unless user_id
-
+      @models          = Model.includes(:trams).order(:name)
       @ride_count      = Ride.where(user_id: user_id).count
       @ridden_tram_ids = Ride.where(user_id: user_id).distinct.pluck(:tram_id).to_set
       @ridden_lines    = Ride.where(user_id: user_id).distinct.pluck(:line).to_set
@@ -58,9 +64,8 @@ class TramsApp < Sinatra::Base
   # Dashboard
   # ---------------------------------------------------------------
   get '/' do
-    selected_user_id = params['user_id'] ? params['user_id'].to_i : session[:user_id]
-    session[:user_id] = selected_user_id if selected_user_id
-    load_home_data(selected_user_id)
+    require_login
+    load_home_data(current_user.id)
     erb :index
   end
 
@@ -139,17 +144,39 @@ class TramsApp < Sinatra::Base
   # Users
   # ---------------------------------------------------------------
 
-  get '/users/new' do
-    @user = User.new
-    erb :'users/new'
+  get '/login' do
+    erb :'auth/login'
   end
 
-  post '/users' do
+  post '/login' do
+    user = User.find_by(email: params[:email]&.downcase)
+    if user&.authenticate(params['password'])
+      session[:user_id] = user.id
+      redirect '/'
+    end
+
+    @error = 'Fel e-post eller lösenord'
+    erb :'auth/login'
+  end
+
+  delete '/logout' do
+    session.clear
+    redirect '/login'
+  end
+
+  get '/signup' do
+    @user = User.new()
+    erb :'auth/signup'
+  end
+
+  post '/signup' do
     @user = User.new(user_params)
+    @user.email = @user.email&.downcase
     if @user.save
+      session[:user_id] = @user.id
       redirect '/'
     else
-      erb :'users/new'
+      erb :'auth/signup'
     end
   end
 

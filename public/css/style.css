@@ -221,7 +221,8 @@ label {
 label:first-child { margin-top: 0; }
 
 input[type=text], input[type=email], input[type=tel],
-input[type=date], input[type=search], select, textarea {
+input[type=date], input[type=search], input[type=password],
+select, textarea {
   width: 100%;
   font-family: var(--font-body);
   font-size: 0.95rem;

@@ -8,6 +8,7 @@ gem 'activerecord', '~> 7.1'
 gem 'rake', '~> 13.0'
 gem 'rackup', '~> 2.1'
 gem 'puma', '~> 6.4'
+gem 'bcrypt', '~> 3.1'
 
 # Ruby 3.4+ dropped these from the default standard library. ActiveSupport
 # (a dependency of ActiveRecord) still expects to be able to require them,

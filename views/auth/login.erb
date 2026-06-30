@@ -1,0 +1,32 @@
+<div style="max-width: 400px;">
+
+<div class="page-header">
+  <div>
+    <div class="eyebrow">Konto</div>
+    <h1>Logga in</h1>
+  </div>
+</div>
+
+<% if @error %>
+  <div class="note" style="border-color: #8a3a3a; margin-bottom: 1.25rem;"><%= h(@error) %></div>
+<% end %>
+
+<div class="card">
+  <form method="post" action="/login">
+    <label for="email">E-post</label>
+    <input type="email" id="email" name="email" value="<%= h(params['email']) %>" required autofocus>
+
+    <label for="password">Lösenord</label>
+    <input type="password" id="password" name="password" required>
+
+    <div class="form-actions">
+      <button type="submit" class="btn">Logga in</button>
+    </div>
+  </form>
+</div>
+
+<p style="margin-top: 1rem; font-size: 0.88rem; color: var(--color-muted);">
+  Inget konto? <a href="/users/new">Skapa ett här</a>.
+</p>
+
+</div>
