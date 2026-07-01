@@ -1,0 +1,58 @@
+<a href="/trams" class="btn btn-secondary btn-sm" style="margin-bottom: 1rem; display: inline-flex;">&larr; Alla spårvagnar</a>
+
+<div class="page-header">
+  <div>
+    <div class="eyebrow"><%= h(@tram.model.name) %></div>
+    <h1>
+      <span class="mono">#<%= h(@tram.number) %></span>
+      <% if @tram.name.present? %>
+        <span class="tram-show-name">&middot; <%= h(@tram.name) %></span>
+      <% end %>
+    </h1>
+  </div>
+  <% if @my_rides.any? %>
+    <span class="badge">Åkt</span>
+  <% end %>
+</div>
+
+<% if @tram.description.present? %>
+  <p class="tram-show-description"><%= h(@tram.description) %></p>
+<% end %>
+
+<% if @seen_lines.any? %>
+  <section class="tram-detail-section">
+    <h2>Sedd på linjer</h2>
+    <div class="line-pills" style="margin-top: 0.6rem;">
+      <% @seen_lines.each do |line| %>
+        <% colors = Ride.color_for(line) %>
+        <div class="line-pill" style="background:<%= colors[:bg] %>; color:<%= colors[:text] %>; border-color: transparent;">
+          <%= line %>
+        </div>
+      <% end %>
+    </div>
+  </section>
+<% end %>
+
+<section class="tram-detail-section">
+  <h2>Dina resor</h2>
+  <% if @my_rides.any? %>
+    <% @my_rides.each do |ride| %>
+      <% colors = Ride.color_for(ride.line) %>
+      <div class="log-entry">
+        <div class="log-marker"><%= ride.ridden_on.strftime('%Y-%m-%d') %></div>
+        <div class="log-body">
+          <div class="line-pill line-pill-sm" style="background:<%= colors[:bg] %>; color:<%= colors[:text] %>; border-color: transparent;">
+            <%= ride.line %>
+          </div>
+        </div>
+        <form method="post" action="/rides/<%= ride.id %>" class="inline"
+              onsubmit="return confirm('Ta bort den här resan?');">
+          <input type="hidden" name="_method" value="DELETE">
+          <button type="submit" class="btn btn-danger btn-sm">Ta bort</button>
+        </form>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="empty-state">Du har inte åkt denna spårvagn ännu.</div>
+  <% end %>
+</section>

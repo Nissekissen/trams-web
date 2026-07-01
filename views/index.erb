@@ -3,114 +3,41 @@
     <div class="eyebrow">Hem</div>
     <h1>Trams</h1>
   </div>
-  <a href="/trams/new" class="btn btn-secondary">+ Ny spårvagn</a>
 </div>
 
+<div class="hero-stat card">
+  <div class="hero-stat-value"><%= @week_ride_count %></div>
+  <div class="hero-stat-label">resor den här veckan</div>
+</div>
 
-  <div class="card">
-    <h2>Logga en resa</h2>
-    <form method="post" action="/rides">
-      <input type="hidden" name="user_id" value="<%= current_user.id %>">
-
-      <label for="model_id">Modell</label>
-      <select id="model_id" name="model_id" required onchange="tramsApp.filterTramsByModel()">
-        <option value="">Välj modell</option>
-        <% @models.each do |model| %>
-          <option value="<%= model.id %>"><%= h(model.name) %></option>
-        <% end %>
-      </select>
-
-      <label for="tram_id">Spårvagn</label>
-      <select id="tram_id" name="tram_id" required disabled>
-        <option value="">Välj modell först</option>
-        <% @models.each do |model| %>
-          <% model.trams.sort_by(&:number).each do |tram| %>
-            <option value="<%= tram.id %>" data-model-id="<%= model.id %>">
-              <%= h(tram.number) %><% if tram.name.present? %> · <%= h(tram.name) %><% end %>
-            </option>
-          <% end %>
-        <% end %>
-      </select>
-
-      <script>
-        window.tramsApp = window.tramsApp || {};
-
-        (function () {
-          var tramSelect = document.getElementById('tram_id');
-          tramsApp.allTramOptions = Array.prototype.slice.call(
-            tramSelect.querySelectorAll('option[data-model-id]')
-          );
-        })();
-
-        tramsApp.filterTramsByModel = function () {
-          var modelId = document.getElementById('model_id').value;
-          var tramSelect = document.getElementById('tram_id');
-
-          tramSelect.querySelectorAll('option[data-model-id]').forEach(function (option) {
-            option.remove();
-          });
-
-          tramsApp.allTramOptions
-            .filter(function (option) { return option.dataset.modelId === modelId; })
-            .forEach(function (option) { tramSelect.appendChild(option); });
-
-          tramSelect.value = '';
-          tramSelect.disabled = !modelId;
-          tramSelect.querySelector('option[value=""]').textContent =
-            modelId ? 'Välj spårvagn' : 'Välj modell först';
-        };
-      </script>
-
-      <label for="line">Linje</label>
-      <select id="line" name="line" required>
-        <option value="">Välj linje</option>
-        <% Ride::LINES.each do |line| %>
-          <option value="<%= line %>"><%= line %></option>
-        <% end %>
-      </select>
-
-      <label for="ridden_on">Datum</label>
-      <input type="date" id="ridden_on" name="ridden_on" value="<%= Date.today %>" required>
-
-      <div class="form-actions">
-        <button type="submit" class="btn">Logga resa</button>
-      </div>
-    </form>
+<div class="stats-row">
+  <div class="stat-chip">
+    <div class="stat-chip-value"><%= @ride_count %></div>
+    <div class="stat-chip-label">Resor totalt</div>
   </div>
-
-  <div class="card stat" style="margin-bottom:1rem;">
-    <div class="stat-value"><%= @ride_count %></div>
-    <div class="stat-label">Resor gjorda</div>
+  <div class="stat-chip">
+    <div class="stat-chip-value"><%= @ridden_tram_ids.size %>/<%= @total_trams %></div>
+    <div class="stat-chip-label">Spårvagnar</div>
   </div>
+  <div class="stat-chip">
+    <div class="stat-chip-value"><%= @ridden_lines.size %>/<%= Ride::LINES.size %></div>
+    <div class="stat-chip-label">Linjer</div>
+  </div>
+</div>
 
-  <div class="card">
-    <div class="progress-header">
-      <h3>Linjer</h3>
-      <span class="muted"><%= @ridden_lines.size %>/<%= Ride::LINES.size %></span>
-    </div>
-    <div class="line-pills">
-      <% Ride::LINES.each do |line| %>
-        <% color = Ride.color_for(line) %>
-        <div class="line-pill<%= ' line-pill-pending' unless @ridden_lines.include?(line) %>"
-             style="background: <%= color[:bg] %>; color: <%= color[:text] %>;">
-          <%= line %>
+<% if @recent_rides.any? %>
+  <div class="section-label">Senaste resor</div>
+  <div class="recent-rides">
+    <% @recent_rides.each do |ride| %>
+      <% colors = Ride.color_for(ride.line) %>
+      <div class="recent-ride-row">
+        <div class="recent-ride-line-pill" style="background:<%= colors[:bg] %>; color:<%= colors[:text] %>;"><%= ride.line %></div>
+        <div class="recent-ride-info">
+          <span class="recent-ride-num"><%= h(ride.tram.number) %></span>
+          <span class="recent-ride-model"><%= h(ride.tram.model.name) %></span>
         </div>
-      <% end %>
-    </div>
+        <div class="recent-ride-date"><%= ride.ridden_on.strftime('%-d %b') %></div>
+      </div>
+    <% end %>
   </div>
-
-  <% @models.each do |model| %>
-    <% total = model.trams.size %>
-    <% next if total.zero? %>
-    <% ridden  = model.trams.count { |tram| @ridden_tram_ids.include?(tram.id) } %>
-    <% percent = (ridden.to_f / total * 100).round %>
-    <div class="card">
-      <div class="progress-header">
-        <h3><%= h(model.name) %></h3>
-        <span class="muted"><%= ridden %>/<%= total %> (<%= percent %>%)</span>
-      </div>
-      <div class="progress-bar">
-        <div class="progress-bar-fill" style="width: <%= percent %>%;"></div>
-      </div>
-    </div>
-  <% end %>
+<% end %>

@@ -6,12 +6,12 @@
 </div>
 
 <div class="card">
-  <form method="post" action="/trams/<%= @tram.id %>">
+  <form method="post" action="/admin/trams/<%= @tram.id %>">
     <input type="hidden" name="_method" value="PUT">
     <%= erb :'trams/_form' %>
     <div class="form-actions">
       <button type="submit" class="btn">Spara ändringar</button>
-      <a href="/trams" class="btn btn-secondary">Avbryt</a>
+      <a href="/admin/trams" class="btn btn-secondary">Avbryt</a>
     </div>
   </form>
 </div>

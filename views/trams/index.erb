@@ -1,60 +1,64 @@
 <div class="page-header">
   <div>
     <div class="eyebrow">Spårvagnar</div>
-    <h1>Alla spårvagnar</h1>
-  </div>
-  <div class="form-actions" style="margin-top:0;">
-    <a href="/trams/new" class="btn">+ Lägg till spårvagn</a>
-    <a href="/models/new" class="btn btn-secondary">+ Ny modell</a>
+    <h1>Utforska</h1>
   </div>
 </div>
 
-<% if @models.any? %>
-  <form method="get" action="/trams" class="model-filter">
-    <input type="hidden" name="filtered" value="1">
-    <% @models.each do |model| %>
-      <label class="model-filter-pill">
-        <input type="checkbox" name="model_ids[]" value="<%= model.id %>"
-               <%= 'checked' if @selected_model_ids.include?(model.id) %>
-               onchange="this.form.submit()">
-        <%= h(model.name) %>
-      </label>
-    <% end %>
-  </form>
+<% @models.each do |model| %>
+  <% next if model.trams.empty? %>
+  <% trams = model.trams.sort_by(&:number) %>
+  <% ridden = trams.count { |t| @ridden_tram_ids.include?(t.id) } %>
+  <% percent = (ridden.to_f / trams.size * 100).round %>
+
+  <div class="model-section">
+    <div class="model-banner <%= 'model-banner--complete' if ridden == trams.size %>">
+      <span class="model-banner-name"><%= h(model.name) %></span>
+      <span class="model-banner-count"><%= ridden %>/<%= trams.size %> åkta</span>
+    </div>
+    <div class="model-progress-bar">
+      <div class="model-progress-fill" style="width: <%= percent %>%;"></div>
+    </div>
+    <div class="tram-list">
+      <% trams.each do |tram| %>
+        <% ridden_tram = @ridden_tram_ids.include?(tram.id) %>
+        <% lines = @lines_by_tram[tram.id] || [] %>
+        <% has_detail = tram.description.present? || lines.any? %>
+        <div class="tram-row <%= 'tram-row--ridden' if ridden_tram %>" data-tram-id="<%= tram.id %>">
+          <div class="tram-row-summary" <%= 'onclick="toggleTram(this)"' if has_detail %>>
+            <span class="tram-row-num"><%= h(tram.number) %></span>
+            <span class="tram-row-name"><%= h(tram.name) if tram.name.present? %></span>
+            <div class="tram-row-check <%= 'tram-row-check--done' if ridden_tram %>"><% if ridden_tram %>✓<% end %></div>
+            <% if has_detail %>
+              <i class="ti ti-chevron-down tram-row-chevron" aria-hidden="true"></i>
+            <% end %>
+          </div>
+          <% if has_detail %>
+            <div class="tram-row-detail">
+              <% if tram.description.present? %>
+                <p class="tram-row-desc"><%= h(tram.description) %></p>
+              <% end %>
+              <% if lines.any? %>
+                <div class="tram-row-detail-label">Sedd på linjer</div>
+                <div class="line-pills">
+                  <% lines.each do |line| %>
+                    <% colors = Ride.color_for(line) %>
+                    <div class="line-pill line-pill-sm" style="background:<%= colors[:bg] %>; color:<%= colors[:text] %>; border: 1.5px solid #1a1a1a; box-shadow: 0 1.5px 0 #1a1a1a;">
+                      <%= line %>
+                    </div>
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
 <% end %>
 
-<% if @trams_by_model.empty? %>
-  <div class="empty-state">
-    <p>Inga spårvagnar att visa.</p>
-    <a href="/trams/new">Lägg till din första spårvagn →</a>
-  </div>
-<% else %>
-  <% @models.each do |model| %>
-    <% trams = @trams_by_model[model] %>
-    <% next unless trams %>
-    <div class="course-block">
-      <h3><%= h(model.name) %></h3>
-      <div class="card-list">
-        <% trams.each do |tram| %>
-          <div class="card row-link">
-            <div>
-              <h3>
-                <%= h(tram.number) %>
-                <% if tram.name.present? %><span class="muted">· <%= h(tram.name) %></span><% end %>
-              </h3>
-              <% if tram.description.present? %><p class="muted"><%= h(tram.description) %></p><% end %>
-            </div>
-            <div class="form-actions" style="margin-top:0;">
-              <a href="/trams/<%= tram.id %>/edit" class="btn btn-secondary btn-sm">Redigera</a>
-              <form method="post" action="/trams/<%= tram.id %>" class="inline"
-                    onsubmit="return confirm('Ta bort spårvagn <%= h(tram.number) %>? Detta går inte att ångra.');">
-                <input type="hidden" name="_method" value="DELETE">
-                <button type="submit" class="btn btn-danger btn-sm">Ta bort</button>
-              </form>
-            </div>
-          </div>
-        <% end %>
-      </div>
-    </div>
-  <% end %>
-<% end %>
+<script>
+function toggleTram(summary) {
+  summary.closest('.tram-row').classList.toggle('tram-row--expanded');
+}
+</script>

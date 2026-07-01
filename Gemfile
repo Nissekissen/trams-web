@@ -3,6 +3,7 @@ source 'https://rubygems.org'
 ruby '>= 3.1'
 
 gem 'sinatra', '~> 4.0'
+gem 'sinatra-contrib', '~> 4.0', require: false
 gem 'dotenv', '~> 3.1'
 gem 'activerecord', '~> 7.1'
 gem 'rake', '~> 13.0'
