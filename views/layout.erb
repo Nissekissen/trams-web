@@ -65,7 +65,7 @@
           <input type="hidden" name="user_id" value="<%= current_user.id %>">
 
           <label for="modal_model_id">Modell</label>
-          <select id="modal_model_id" name="model_id" required onchange="modalApp.filterTrams()">
+          <select id="modal_model_id" name="model_id" required>
             <option value="">Välj modell</option>
             <% @models.each do |model| %>
               <option value="<%= model.id %>"><%= h(model.name) %></option>
@@ -73,8 +73,8 @@
           </select>
 
           <label for="modal_tram_id">Spårvagn</label>
-          <select id="modal_tram_id" name="tram_id" required disabled>
-            <option value="">Välj modell först</option>
+          <select id="modal_tram_id" name="tram_id" required>
+            <option value="">Välj spårvagn</option>
             <% @models.each do |model| %>
               <% model.trams.sort_by(&:number).each do |tram| %>
                 <option value="<%= tram.id %>" data-model-id="<%= model.id %>">
@@ -104,21 +104,32 @@
   </div>
 
   <script>
-    window.modalApp = {};
     (function () {
-      var allOptions = Array.prototype.slice.call(
-        document.getElementById('modal_tram_id').querySelectorAll('option[data-model-id]')
-      );
-      modalApp.filterTrams = function () {
-        var modelId = document.getElementById('modal_model_id').value;
-        var tramSelect = document.getElementById('modal_tram_id');
-        tramSelect.querySelectorAll('option[data-model-id]').forEach(function (o) { o.remove(); });
-        allOptions.filter(function (o) { return o.dataset.modelId === modelId; })
-                  .forEach(function (o) { tramSelect.appendChild(o); });
-        tramSelect.value = '';
-        tramSelect.disabled = !modelId;
-        tramSelect.querySelector('option[value=""]').textContent = modelId ? 'Välj spårvagn' : 'Välj modell först';
-      };
+      var modelSelect = document.getElementById('modal_model_id');
+      var tramSelect  = document.getElementById('modal_tram_id');
+      var allTramOptions = Array.from(tramSelect.querySelectorAll('option[data-model-id]'));
+
+      function renderTrams(modelId, keepValue) {
+        allTramOptions.forEach(function (o) { if (o.parentNode) o.parentNode.removeChild(o); });
+        var subset = modelId
+          ? allTramOptions.filter(function (o) { return o.dataset.modelId === modelId; })
+          : allTramOptions;
+        subset.forEach(function (o) { tramSelect.appendChild(o); });
+        tramSelect.value = keepValue || '';
+      }
+
+      modelSelect.addEventListener('change', function () {
+        renderTrams(modelSelect.value, '');
+      });
+
+      tramSelect.addEventListener('change', function () {
+        var opt = tramSelect.options[tramSelect.selectedIndex];
+        if (!opt || !opt.dataset.modelId) return;
+        if (modelSelect.value !== opt.dataset.modelId) {
+          modelSelect.value = opt.dataset.modelId;
+          renderTrams(opt.dataset.modelId, opt.value);
+        }
+      });
     })();
   </script>
   <% end %>
