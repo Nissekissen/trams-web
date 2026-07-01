@@ -5,18 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Trams</title>
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
 </head>
 <body>
   <div class="layout">
-    <header class="topbar">
-      <div class="brand">Trams<span class="dot">.</span></div>
-      <nav>
-        <a href="/">Hem</a>
-        <a href="/trams">Spårvagnar</a>
-      </nav>
-    </header>
-
     <aside class="sidebar">
       <div class="brand">Trams<span class="dot">.</span></div>
       <ul class="nav-list">
@@ -32,6 +25,102 @@
     <main class="content">
       <%= yield %>
     </main>
+
+    <div class="bottom-area">
+      <div class="bottom-area-tray">
+        <button type="button" class="btn-game btn-game--primary" style="width: 100%;" onclick="document.getElementById('rideModal').classList.add('ride-modal--open')">
+          <i class="ti ti-plus" aria-hidden="true"></i>
+          Logga resa
+        </button>
+      </div>
+      <nav class="bottom-nav">
+        <a href="/" class="bottom-nav-item <%= 'bottom-nav-item--active' if nav_active?('/') %>">
+          <i class="ti ti-home" aria-hidden="true"></i>
+          <span>Hem</span>
+        </a>
+        <a href="/trams" class="bottom-nav-item <%= 'bottom-nav-item--active' if nav_active?('/trams') %>">
+          <i class="ti ti-train" aria-hidden="true"></i>
+          <span>Spårvagnar</span>
+        </a>
+        <div class="bottom-nav-item">
+          <i class="ti ti-user" aria-hidden="true"></i>
+          <span>Profil</span>
+        </div>
+      </nav>
+    </div>
   </div>
+
+  <% if logged_in? %>
+  <div class="ride-modal" id="rideModal">
+    <div class="ride-modal-backdrop" onclick="document.getElementById('rideModal').classList.remove('ride-modal--open')"></div>
+    <div class="ride-modal-sheet">
+      <div class="ride-modal-header">
+        <h2>Logga resa</h2>
+        <button class="ride-modal-close" onclick="document.getElementById('rideModal').classList.remove('ride-modal--open')" aria-label="Stäng">
+          <i class="ti ti-x" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="ride-modal-body">
+        <form method="post" action="/rides">
+          <input type="hidden" name="user_id" value="<%= current_user.id %>">
+
+          <label for="modal_model_id">Modell</label>
+          <select id="modal_model_id" name="model_id" required onchange="modalApp.filterTrams()">
+            <option value="">Välj modell</option>
+            <% @models.each do |model| %>
+              <option value="<%= model.id %>"><%= h(model.name) %></option>
+            <% end %>
+          </select>
+
+          <label for="modal_tram_id">Spårvagn</label>
+          <select id="modal_tram_id" name="tram_id" required disabled>
+            <option value="">Välj modell först</option>
+            <% @models.each do |model| %>
+              <% model.trams.sort_by(&:number).each do |tram| %>
+                <option value="<%= tram.id %>" data-model-id="<%= model.id %>">
+                  <%= h(tram.number) %><% if tram.name.present? %> · <%= h(tram.name) %><% end %>
+                </option>
+              <% end %>
+            <% end %>
+          </select>
+
+          <label for="modal_line">Linje</label>
+          <select id="modal_line" name="line" required>
+            <option value="">Välj linje</option>
+            <% Ride::LINES.each do |line| %>
+              <option value="<%= line %>"><%= line %></option>
+            <% end %>
+          </select>
+
+          <label for="modal_ridden_on">Datum</label>
+          <input type="date" id="modal_ridden_on" name="ridden_on" value="<%= Date.today %>" required>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-game btn-game--primary" style="flex: 1;">Logga resa</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    window.modalApp = {};
+    (function () {
+      var allOptions = Array.prototype.slice.call(
+        document.getElementById('modal_tram_id').querySelectorAll('option[data-model-id]')
+      );
+      modalApp.filterTrams = function () {
+        var modelId = document.getElementById('modal_model_id').value;
+        var tramSelect = document.getElementById('modal_tram_id');
+        tramSelect.querySelectorAll('option[data-model-id]').forEach(function (o) { o.remove(); });
+        allOptions.filter(function (o) { return o.dataset.modelId === modelId; })
+                  .forEach(function (o) { tramSelect.appendChild(o); });
+        tramSelect.value = '';
+        tramSelect.disabled = !modelId;
+        tramSelect.querySelector('option[value=""]').textContent = modelId ? 'Välj spårvagn' : 'Välj modell först';
+      };
+    })();
+  </script>
+  <% end %>
 </body>
 </html>
