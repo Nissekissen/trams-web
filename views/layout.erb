@@ -14,7 +14,6 @@
       <nav>
         <a href="/">Hem</a>
         <a href="/trams">Spårvagnar</a>
-        <a href="/rides">Resor</a>
       </nav>
     </header>
 
@@ -23,8 +22,11 @@
       <ul class="nav-list">
         <li><a href="/" class="<%= 'active' if nav_active?('/') %>">Hem</a></li>
         <li><a href="/trams" class="<%= 'active' if nav_active?('/trams') %>">Spårvagnar</a></li>
-        <li><a href="/rides" class="<%= 'active' if nav_active?('/rides') %>">Resor</a></li>
       </ul>
+      <form method="post" action="/logout" style="margin-top: auto;">
+        <input type="hidden" name="_method" value="DELETE">
+        <button type="submit" class="btn btn-secondary" style="width: 100%;">Logga ut</button>
+      </form>
     </aside>
 
     <main class="content">

@@ -22,7 +22,7 @@
     <div class="tram-grid">
       <% model.trams.sort_by(&:number).each do |tram| %>
         <% ridden = @ridden_tram_ids.include?(tram.id) %>
-        <div class="tram-card <%= 'tram-card--ridden' if ridden %>">
+        <a href="/trams/<%= tram.id %>" class="tram-card <%= 'tram-card--ridden' if ridden %>">
           <div class="tram-card-number"><%= h(tram.number) %></div>
           <% if tram.name.present? %>
             <div class="tram-card-name"><%= h(tram.name) %></div>
@@ -30,7 +30,7 @@
           <% if ridden %>
             <div class="tram-card-ridden">✓</div>
           <% end %>
-        </div>
+        </a>
       <% end %>
     </div>
   </div>

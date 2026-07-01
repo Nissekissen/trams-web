@@ -57,6 +57,7 @@ class TramsApp < Sinatra::Base
 
     def load_home_data(user_id)
       @models          = Model.includes(:trams).order(:name)
+      @total_trams     = Tram.count
       @ride_count      = Ride.where(user_id: user_id).count
       @ridden_tram_ids = Ride.where(user_id: user_id).distinct.pluck(:tram_id).to_set
       @ridden_lines    = Ride.where(user_id: user_id).distinct.pluck(:line).to_set
@@ -146,6 +147,15 @@ class TramsApp < Sinatra::Base
     erb :'trams/index'
   end
 
+  get '/trams/:id' do
+    require_login
+    @tram       = Tram.includes(:model).find(params['id'])
+    @my_rides   = Ride.where(user_id: current_user.id, tram_id: @tram.id)
+                      .order(ridden_on: :desc)
+    @seen_lines = Ride.where(tram_id: @tram.id).distinct.pluck(:line).sort
+    erb :'trams/show'
+  end
+
   # ---------------------------------------------------------------
   # Models
   # ---------------------------------------------------------------
@@ -206,20 +216,6 @@ class TramsApp < Sinatra::Base
   # ---------------------------------------------------------------
   # Rides
   # ---------------------------------------------------------------
-  get '/rides' do
-    @users = User.ordered
-    @selected_user_id = params['user_id'] ? params['user_id'].to_i : session[:user_id]
-
-    if @selected_user_id
-      session[:user_id] = @selected_user_id
-      @rides = Ride.where(user_id: @selected_user_id)
-                   .includes(tram: :model)
-                   .order(ridden_on: :desc, created_at: :desc)
-    end
-
-    erb :'rides/index'
-  end
-
   post '/rides' do
     @ride = Ride.new(ride_params)
     if @ride.save
@@ -232,7 +228,9 @@ class TramsApp < Sinatra::Base
   end
 
   delete '/rides/:id' do
-    Ride.find(params['id']).destroy
-    redirect '/rides'
+    ride = Ride.find(params['id'])
+    tram_id = ride.tram_id
+    ride.destroy
+    redirect "/trams/#{tram_id}"
   end
 end
