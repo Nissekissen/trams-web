@@ -638,6 +638,18 @@ table.plain th { color: var(--color-muted); font-weight: 500; font-size: 0.78rem
   padding: 1rem 1.25rem 2rem;
 }
 
+.ride-modal-body select,
+.ride-modal-body input[type=date] {
+  border: 1.5px solid #1a1a1a;
+  border-radius: 10px;
+  box-shadow: 0 2px 0 #1a1a1a;
+  font-family: var(--font-display);
+  font-weight: 600;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
 /* ---------- Tram show page ---------- */
 
 .tram-show-name {
