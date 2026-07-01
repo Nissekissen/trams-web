@@ -482,76 +482,111 @@ table.plain th { color: var(--color-muted); font-weight: 500; font-size: 0.78rem
 
 /* ---------- Public trams browse ---------- */
 
-.model-section {
-  margin-bottom: 2.5rem;
-}
+.model-section { margin-bottom: 2rem; }
 
-.model-section-header {
+.model-banner {
   display: flex;
-  align-items: baseline;
-  gap: 0.75rem;
-  margin-bottom: 0.25rem;
+  align-items: center;
+  justify-content: space-between;
+  background: #1C3D5A;
+  border-radius: 10px 10px 0 0;
+  padding: 0.55rem 0.85rem;
+  border: 2px solid #1a1a1a;
+  border-bottom: none;
 }
-.model-section-header h2 { margin-bottom: 0; }
-
-.model-description {
-  font-size: 0.88rem;
-  margin-bottom: 0.85rem;
-}
-
-.tram-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-  gap: 0.5rem;
-  margin-top: 0.75rem;
-}
-
-.tram-card {
-  position: relative;
-  display: block;
-  background: var(--color-surface);
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius);
-  padding: 0.75rem 0.5rem;
-  text-align: center;
-  cursor: pointer;
-  color: inherit;
-  text-decoration: none;
-}
-.tram-card:hover { border-color: var(--color-accent); text-decoration: none; }
-
-.tram-card--ridden {
-  background: var(--color-accent-soft);
-  border-color: var(--color-accent);
-}
-
-.tram-card-number {
+.model-banner-name {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 1.05rem;
-  color: var(--color-ink);
+  font-size: 0.95rem;
+  color: #fff;
+}
+.model-banner-count { font-size: 0.78rem; color: #9CB8D0; }
+.model-banner--complete { background: #1a5c35; }
+.model-banner--complete .model-banner-count { color: #8ecfaa; }
+
+.model-progress-bar {
+  height: 5px;
+  background: #3a6480;
+  border-left: 2px solid #1a1a1a;
+  border-right: 2px solid #1a1a1a;
+}
+.model-progress-fill { height: 100%; background: #5B9EC9; }
+
+.tram-list {
+  border: 2px solid #1a1a1a;
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+  box-shadow: 0 3px 0 #1a1a1a;
+  background: var(--color-surface);
+  padding: 0.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.tram-card--ridden .tram-card-number {
-  color: var(--color-accent);
-}
-
-.tram-card-name {
-  font-size: 0.72rem;
-  color: var(--color-muted);
-  margin-top: 0.15rem;
-  white-space: nowrap;
+.tram-row {
+  background: var(--color-bg);
+  border: 1.5px solid #1a1a1a;
+  border-radius: 7px;
+  box-shadow: 0 2px 0 #1a1a1a;
   overflow: hidden;
-  text-overflow: ellipsis;
+}
+.tram-row--ridden {
+  background: var(--color-accent-soft);
+  border-color: var(--color-accent);
+  box-shadow: 0 2px 0 var(--color-accent);
+}
+.tram-row--expanded {
+  border-color: var(--color-accent);
+  box-shadow: 0 2px 0 var(--color-accent);
+  background: var(--color-surface);
 }
 
-.tram-card-ridden {
-  position: absolute;
-  top: 4px;
-  right: 6px;
-  font-size: 0.65rem;
-  color: var(--color-accent);
-  font-weight: 700;
+.tram-row-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.65rem;
+  cursor: pointer;
+  user-select: none;
+}
+.tram-row-num {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--color-ink);
+  width: 2.5rem;
+  flex-shrink: 0;
+}
+.tram-row--ridden .tram-row-num,
+.tram-row--expanded .tram-row-num { color: var(--color-accent); }
+.tram-row-name { font-size: 0.85rem; color: var(--color-muted); flex: 1; }
+.tram-row-check {
+  width: 16px; height: 16px; border-radius: 4px;
+  border: 1.5px solid var(--color-line);
+  background: var(--color-surface);
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.6rem; color: #fff;
+}
+.tram-row-check--done { background: var(--color-accent); border-color: var(--color-accent); }
+.tram-row-chevron {
+  font-size: 0.85rem; color: var(--color-muted); flex-shrink: 0;
+  transition: transform 150ms ease;
+}
+.tram-row--expanded .tram-row-chevron { transform: rotate(180deg); color: var(--color-accent); }
+
+.tram-row-detail {
+  display: none;
+  border-top: 1px solid var(--color-line);
+  padding: 0.6rem 0.65rem 0.75rem;
+}
+.tram-row--expanded .tram-row-detail { display: block; }
+.tram-row-desc { font-size: 0.82rem; color: var(--color-muted); margin-bottom: 0.6rem; }
+.tram-row-detail-label {
+  font-family: var(--font-mono); font-size: 0.68rem;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--color-muted); margin-bottom: 0.4rem;
 }
 
 /* ---------- Model filter (trams index) ---------- */

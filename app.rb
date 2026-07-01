@@ -149,8 +149,8 @@ class TramsApp < Sinatra::Base
   # ---------------------------------------------------------------
   get '/trams' do
     require_login
-    @models          = Model.includes(:trams).order(:name)
     @ridden_tram_ids = Ride.where(user_id: current_user.id).distinct.pluck(:tram_id).to_set
+    @lines_by_tram   = Ride.distinct.pluck(:tram_id, :line).group_by(&:first).transform_values { |v| v.map(&:last).sort }
     erb :'trams/index'
   end
 
