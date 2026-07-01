@@ -5,50 +5,39 @@
   </div>
 </div>
 
+<div class="hero-stat card">
+  <div class="hero-stat-value"><%= @week_ride_count %></div>
+  <div class="hero-stat-label">resor den här veckan</div>
+</div>
 
-<div class="stats-grid">
-  <div class="card stat">
-    <div class="stat-value"><%= @ride_count %></div>
-    <div class="stat-label">Resor</div>
+<div class="stats-row">
+  <div class="stat-chip">
+    <div class="stat-chip-value"><%= @ride_count %></div>
+    <div class="stat-chip-label">Resor totalt</div>
   </div>
-  <div class="card stat">
-    <div class="stat-value"><%= @ridden_tram_ids.size %>/<%= @total_trams %></div>
-    <div class="stat-label">Spårvagnar</div>
+  <div class="stat-chip">
+    <div class="stat-chip-value"><%= @ridden_tram_ids.size %>/<%= @total_trams %></div>
+    <div class="stat-chip-label">Spårvagnar</div>
   </div>
-  <div class="card stat">
-    <div class="stat-value"><%= @ridden_lines.size %>/<%= Ride::LINES.size %></div>
-    <div class="stat-label">Linjer</div>
+  <div class="stat-chip">
+    <div class="stat-chip-value"><%= @ridden_lines.size %>/<%= Ride::LINES.size %></div>
+    <div class="stat-chip-label">Linjer</div>
   </div>
 </div>
 
-  <div class="card">
-    <div class="progress-header">
-      <h3>Linjer</h3>
-      <span class="muted"><%= @ridden_lines.size %>/<%= Ride::LINES.size %></span>
-    </div>
-    <div class="line-pills">
-      <% Ride::LINES.each do |line| %>
-        <% color = Ride.color_for(line) %>
-        <div class="line-pill<%= ' line-pill-pending' unless @ridden_lines.include?(line) %>"
-             style="background: <%= color[:bg] %>; color: <%= color[:text] %>;">
-          <%= line %>
+<% if @recent_rides.any? %>
+  <div class="section-label">Senaste resor</div>
+  <div class="recent-rides">
+    <% @recent_rides.each do |ride| %>
+      <% colors = Ride.color_for(ride.line) %>
+      <div class="recent-ride-row">
+        <div class="recent-ride-line-pill" style="background:<%= colors[:bg] %>; color:<%= colors[:text] %>;"><%= ride.line %></div>
+        <div class="recent-ride-info">
+          <span class="recent-ride-num"><%= h(ride.tram.number) %></span>
+          <span class="recent-ride-model"><%= h(ride.tram.model.name) %></span>
         </div>
-      <% end %>
-    </div>
+        <div class="recent-ride-date"><%= ride.ridden_on.strftime('%-d %b') %></div>
+      </div>
+    <% end %>
   </div>
-
-  <% @models.each do |model| %>
-    <% total = model.trams.size %>
-    <% next if total.zero? %>
-    <% ridden  = model.trams.count { |tram| @ridden_tram_ids.include?(tram.id) } %>
-    <% percent = (ridden.to_f / total * 100).round %>
-    <div class="card">
-      <div class="progress-header">
-        <h3><%= h(model.name) %></h3>
-        <span class="muted"><%= ridden %>/<%= total %> (<%= percent %>%)</span>
-      </div>
-      <div class="progress-bar">
-        <div class="progress-bar-fill" style="width: <%= percent %>%;"></div>
-      </div>
-    </div>
-  <% end %>
+<% end %>

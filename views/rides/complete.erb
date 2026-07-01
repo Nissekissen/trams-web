@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Resa loggad!</title>
+  <link rel="stylesheet" href="/css/style.css?v=<%= File.mtime(File.join(settings.public_folder, 'css', 'style.css')).to_i %>">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+</head>
+<body class="complete-page">
+  <div class="complete-wrap">
+
+    <div class="complete-hero">
+      <div class="complete-circle">
+        <svg class="complete-checkmark" viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg">
+          <circle class="complete-checkmark-circle" cx="26" cy="26" r="24" fill="none"/>
+          <path class="complete-checkmark-path" fill="none" d="M14 27 l9 9 l16-18"/>
+        </svg>
+      </div>
+      <% if @first_ride %>
+        <div class="complete-badge">Första gången!</div>
+      <% end %>
+      <h1 class="complete-title">Resa loggad</h1>
+    </div>
+
+    <div class="complete-tram-card">
+      <div class="complete-tram-number"><%= h(@ride.tram.number) %></div>
+      <div class="complete-tram-meta">
+        <span class="complete-tram-model"><%= h(@ride.tram.model.name) %></span>
+        <% if @ride.tram.name.present? %><span class="complete-tram-name"> · <%= h(@ride.tram.name) %></span><% end %>
+      </div>
+      <% colors = Ride.color_for(@ride.line) %>
+      <div class="complete-line-pill" style="background:<%= colors[:bg] %>; color:<%= colors[:text] %>;">
+        Linje <%= @ride.line %>
+      </div>
+      <% if @ride.tram.description.present? %>
+        <p class="complete-tram-desc"><%= h(@ride.tram.description) %></p>
+      <% end %>
+    </div>
+
+    <div class="complete-stats">
+      <div class="complete-stat">
+        <div class="complete-stat-value"><%= @ride_count %></div>
+        <div class="complete-stat-label">Resor totalt</div>
+      </div>
+      <div class="complete-stat-divider"></div>
+      <div class="complete-stat">
+        <div class="complete-stat-value"><%= @ridden_tram_count %>/<%= @total_trams %></div>
+        <div class="complete-stat-label">Spårvagnar</div>
+      </div>
+      <div class="complete-stat-divider"></div>
+      <div class="complete-stat">
+        <div class="complete-stat-value"><%= @ridden_lines_count %>/<%= Ride::LINES.size %></div>
+        <div class="complete-stat-label">Linjer</div>
+      </div>
+    </div>
+
+    <a href="/" class="btn-game btn-game--primary complete-cta">Fortsätt</a>
+
+  </div>
+</body>
+</html>

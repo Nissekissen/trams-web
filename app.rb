@@ -61,6 +61,12 @@ class TramsApp < Sinatra::Base
       @ride_count      = Ride.where(user_id: user_id).count
       @ridden_tram_ids = Ride.where(user_id: user_id).distinct.pluck(:tram_id).to_set
       @ridden_lines    = Ride.where(user_id: user_id).distinct.pluck(:line).to_set
+      week_start       = Date.today - ((Date.today.wday - 1) % 7)
+      @week_ride_count = Ride.where(user_id: user_id).where('ridden_on >= ?', week_start).count
+      @recent_rides    = Ride.where(user_id: user_id)
+                             .includes(tram: :model)
+                             .order(ridden_on: :desc, created_at: :desc)
+                             .limit(10)
     end
   end
 
@@ -227,11 +233,25 @@ class TramsApp < Sinatra::Base
     @ride = Ride.new(ride_params)
     if @ride.save
       session[:user_id] = @ride.user_id
-      redirect '/'
+      session[:complete_ride_id] = @ride.id
+      redirect "/rides/#{@ride.id}/complete"
     else
       load_home_data(@ride.user_id)
       erb :index
     end
+  end
+
+  get '/rides/:id/complete' do
+    require_login
+    redirect '/' unless session.delete(:complete_ride_id) == params['id'].to_i
+    @ride            = Ride.includes(tram: :model).find(params['id'])
+    user_id          = current_user.id
+    @ride_count      = Ride.where(user_id: user_id).count
+    @ridden_tram_count = Ride.where(user_id: user_id).distinct.pluck(:tram_id).size
+    @total_trams     = Tram.count
+    @ridden_lines_count = Ride.where(user_id: user_id).distinct.pluck(:line).size
+    @first_ride      = Ride.where(user_id: user_id, tram_id: @ride.tram_id).count == 1
+    erb :'rides/complete', layout: false
   end
 
   delete '/rides/:id' do
