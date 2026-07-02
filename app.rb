@@ -228,13 +228,43 @@ class TramsApp < Sinatra::Base
       @email = email
       return erb :'auth/signup_step1', layout: false
     end
-    if User.exists?(email: email)
-      @error = 'Den e-postadressen används redan'
-      @email = email
-      return erb :'auth/signup_step1', layout: false
+    existing = User.find_by(email: email)
+    if existing
+      if existing.password_set?
+        @error = 'Den e-postadressen används redan'
+        @email = email
+        return erb :'auth/signup_step1', layout: false
+      else
+        session[:claim_user_id] = existing.id
+        redirect '/signup/claim'
+      end
+    else
+      session[:signup_email] = email
+      redirect '/signup/details'
     end
-    session[:signup_email] = email
-    redirect '/signup/details'
+  end
+
+  get '/signup/claim' do
+    user_id = session[:claim_user_id]
+    redirect '/signup' unless user_id
+    @user = User.find_by(id: user_id)
+    redirect '/signup' unless @user && !@user.password_set?
+    erb :'auth/claim', layout: false
+  end
+
+  post '/signup/claim' do
+    user_id = session[:claim_user_id]
+    redirect '/signup' unless user_id
+    @user = User.find_by(id: user_id)
+    redirect '/signup' unless @user && !@user.password_set?
+    if @user.update(password: params['password'], password_confirmation: params['password_confirmation'], password_set: true)
+      session.delete(:claim_user_id)
+      session[:user_id] = @user.id
+      redirect '/'
+    else
+      @errors = @user.errors.full_messages
+      erb :'auth/claim', layout: false
+    end
   end
 
   get '/signup/details' do
@@ -247,7 +277,7 @@ class TramsApp < Sinatra::Base
   post '/signup' do
     email = session[:signup_email]
     redirect '/signup' unless email
-    @user = User.new(user_params.merge('email' => email))
+    @user = User.new(user_params.merge('email' => email, 'password_set' => true))
     if @user.save
       session.delete(:signup_email)
       session[:user_id] = @user.id
@@ -289,7 +319,7 @@ class TramsApp < Sinatra::Base
       @password_error = 'De nya lösenorden matchar inte'
       return erb :'profile/show'
     end
-    if user.update(password: params['new_password'], password_confirmation: params['new_password_confirmation'])
+    if user.update(password: params['new_password'], password_confirmation: params['new_password_confirmation'], password_set: true)
       @password_success = 'Lösenordet har uppdaterats'
     else
       @password_error = user.errors.full_messages.first

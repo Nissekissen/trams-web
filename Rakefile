@@ -63,7 +63,8 @@ namespace :users do
       placeholder_email = "#{u.name.downcase.gsub(/\s+/, '.')}@placeholder.local"
       u.update_columns(
         email: placeholder_email,
-        password_digest: BCrypt::Password.create(SecureRandom.hex(32))
+        password_digest: BCrypt::Password.create(SecureRandom.hex(32)),
+        password_set: false
       )
       puts "Backfillad: #{u.name} → #{placeholder_email}"
     end
