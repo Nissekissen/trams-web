@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Skapa konto · Trams</title>
+  <link rel="stylesheet" href="/css/style.css?v=<%= File.mtime(File.join(settings.public_folder, 'css', 'style.css')).to_i %>">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+</head>
+<body class="auth-page">
+  <div class="auth-wrap">
+
+    <div class="auth-brand">
+      Trams
+      <span class="auth-brand-sub">Nästan klart</span>
+    </div>
+
+    <div class="auth-card">
+      <% if @errors&.any? %>
+        <div class="form-error">
+          <% @errors.each do |e| %><div><%= h(e) %></div><% end %>
+        </div>
+      <% end %>
+
+      <form method="post" action="/signup" class="profile-form">
+        <label>E-post</label>
+        <div class="auth-email-locked"><%= h(@email) %></div>
+
+        <label for="name">Namn</label>
+        <input type="text" id="name" name="name" value="<%= h(@name) %>" required autofocus autocomplete="name" placeholder="Ditt namn">
+
+        <label for="password">Lösenord</label>
+        <input type="password" id="password" name="password" required autocomplete="new-password">
+
+        <label for="password_confirmation">Bekräfta lösenord</label>
+        <input type="password" id="password_confirmation" name="password_confirmation" required autocomplete="new-password">
+
+        <button type="submit" class="btn-game btn-game--primary" style="margin-top: 0.35rem; width: 100%;">Skapa konto</button>
+      </form>
+    </div>
+
+    <p class="auth-footer"><a href="/signup">← Ändra e-post</a></p>
+
+  </div>
+</body>
+</html>

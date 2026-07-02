@@ -191,7 +191,7 @@ class TramsApp < Sinatra::Base
   # ---------------------------------------------------------------
 
   get '/login' do
-    erb :'auth/login'
+    erb :'auth/login', layout: false
   end
 
   post '/login' do
@@ -202,7 +202,7 @@ class TramsApp < Sinatra::Base
     end
 
     @error = 'Fel e-post eller lösenord'
-    erb :'auth/login'
+    erb :'auth/login', layout: false
   end
 
   delete '/logout' do
@@ -211,18 +211,52 @@ class TramsApp < Sinatra::Base
   end
 
   get '/signup' do
-    @user = User.new()
-    erb :'auth/signup'
+    session.delete(:signup_email)
+    @email = params['email']
+    erb :'auth/signup_step1', layout: false
+  end
+
+  post '/signup/start' do
+    email = params['email']&.downcase&.strip
+    if email.nil? || email.empty?
+      @error = 'Ange en e-postadress'
+      @email = email
+      return erb :'auth/signup_step1', layout: false
+    end
+    unless email.match?(URI::MailTo::EMAIL_REGEXP)
+      @error = 'Ogiltig e-postadress'
+      @email = email
+      return erb :'auth/signup_step1', layout: false
+    end
+    if User.exists?(email: email)
+      @error = 'Den e-postadressen används redan'
+      @email = email
+      return erb :'auth/signup_step1', layout: false
+    end
+    session[:signup_email] = email
+    redirect '/signup/details'
+  end
+
+  get '/signup/details' do
+    @email = session[:signup_email]
+    redirect '/signup' unless @email
+    @name = params['name']
+    erb :'auth/signup_step2', layout: false
   end
 
   post '/signup' do
-    @user = User.new(user_params)
-    @user.email = @user.email&.downcase
+    email = session[:signup_email]
+    redirect '/signup' unless email
+    @user = User.new(user_params.merge('email' => email))
     if @user.save
+      session.delete(:signup_email)
       session[:user_id] = @user.id
       redirect '/'
     else
-      erb :'auth/signup'
+      @email = email
+      @name  = params['name']
+      @errors = @user.errors.full_messages
+      erb :'auth/signup_step2', layout: false
     end
   end
 
