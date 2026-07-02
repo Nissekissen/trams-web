@@ -16,6 +16,9 @@
         <li><a href="/" class="<%= 'active' if nav_active?('/') %>">Hem</a></li>
         <li><a href="/trams" class="<%= 'active' if nav_active?('/trams') %>">Spårvagnar</a></li>
         <li><a href="/profile" class="<%= 'active' if nav_active?('/profile') %>">Profil</a></li>
+        <% if logged_in? && current_user.is_admin %>
+          <li><a href="/admin/trams" class="<%= 'active' if nav_active?('/admin') %>">Admin</a></li>
+        <% end %>
       </ul>
     </aside>
 
