@@ -227,6 +227,55 @@ class TramsApp < Sinatra::Base
   end
 
   # ---------------------------------------------------------------
+  # Profile
+  # ---------------------------------------------------------------
+  get '/profile' do
+    require_login
+    erb :'profile/show'
+  end
+
+  get '/about' do
+    require_login
+    erb :'about/index'
+  end
+
+  get '/privacy' do
+    require_login
+    erb :privacy
+  end
+
+  patch '/profile/password' do
+    require_login
+    user = current_user
+    unless user.authenticate(params['current_password'])
+      @password_error = 'Nuvarande lösenord stämmer inte'
+      return erb :'profile/show'
+    end
+    if params['new_password'] != params['new_password_confirmation']
+      @password_error = 'De nya lösenorden matchar inte'
+      return erb :'profile/show'
+    end
+    if user.update(password: params['new_password'], password_confirmation: params['new_password_confirmation'])
+      @password_success = 'Lösenordet har uppdaterats'
+    else
+      @password_error = user.errors.full_messages.first
+    end
+    erb :'profile/show'
+  end
+
+  delete '/profile' do
+    require_login
+    user = current_user
+    unless user.authenticate(params['password'])
+      @delete_error = 'Fel lösenord'
+      return erb :'profile/show'
+    end
+    user.destroy
+    session.clear
+    redirect '/login'
+  end
+
+  # ---------------------------------------------------------------
   # Rides
   # ---------------------------------------------------------------
   post '/rides' do

@@ -821,6 +821,155 @@ table.plain th { color: var(--color-muted); font-weight: 500; font-size: 0.78rem
   border-bottom: 1px solid var(--color-line);
 }
 
+/* ---------- Profile page ---------- */
+
+.profile-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.1rem 1.25rem;
+  margin-bottom: 1.75rem;
+}
+
+.profile-avatar {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.profile-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--color-ink);
+}
+
+.profile-email {
+  font-size: 0.82rem;
+  color: var(--color-muted);
+  margin-top: 0.1rem;
+}
+
+.profile-section {
+  margin-bottom: 2rem;
+}
+
+.profile-section-title {
+  font-size: 0.95rem;
+  margin-bottom: 0.85rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.profile-form label {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--color-muted);
+  margin-bottom: -0.25rem;
+}
+
+.form-error {
+  background: #fdecea;
+  color: #9b2c2c;
+  border: 1px solid #f5c2c2;
+  border-radius: 7px;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+
+.form-success {
+  background: #d4f0e0;
+  color: #1a5c35;
+  border: 1px solid #a3d9b8;
+  border-radius: 7px;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+
+.profile-link-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  font-size: 0.92rem;
+  color: var(--color-ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--color-line);
+}
+.profile-link-row:hover { color: var(--color-accent); text-decoration: none; }
+.profile-link-row i { color: var(--color-muted); font-size: 0.85rem; }
+
+.about-meta {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--color-muted);
+}
+
+.profile-danger-zone {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.delete-account {
+  border: 1.5px solid #e4b4b4;
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.delete-account-toggle {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: #9b2c2c;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+.delete-account-toggle::-webkit-details-marker { display: none; }
+.delete-account-toggle::after {
+  content: '';
+  margin-left: auto;
+  border: 4px solid transparent;
+  border-top-color: #9b2c2c;
+  margin-top: 3px;
+}
+details[open] .delete-account-toggle::after {
+  border-top-color: transparent;
+  border-bottom-color: #9b2c2c;
+  margin-top: -3px;
+}
+
+.delete-account-body {
+  padding: 0 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.delete-account-body p {
+  font-size: 0.82rem;
+  color: var(--color-muted);
+  margin: 0;
+}
+
 /* ---------- Ride complete page ---------- */
 
 body.complete-page {

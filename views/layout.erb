@@ -15,11 +15,8 @@
       <ul class="nav-list">
         <li><a href="/" class="<%= 'active' if nav_active?('/') %>">Hem</a></li>
         <li><a href="/trams" class="<%= 'active' if nav_active?('/trams') %>">Spårvagnar</a></li>
+        <li><a href="/profile" class="<%= 'active' if nav_active?('/profile') %>">Profil</a></li>
       </ul>
-      <form method="post" action="/logout" style="margin-top: auto;">
-        <input type="hidden" name="_method" value="DELETE">
-        <button type="submit" class="btn btn-secondary" style="width: 100%;">Logga ut</button>
-      </form>
     </aside>
 
     <main class="content">
@@ -42,10 +39,10 @@
           <i class="ti ti-train" aria-hidden="true"></i>
           <span>Spårvagnar</span>
         </a>
-        <div class="bottom-nav-item">
+        <a href="/profile" class="bottom-nav-item <%= 'bottom-nav-item--active' if nav_active?('/profile') %>">
           <i class="ti ti-user" aria-hidden="true"></i>
           <span>Profil</span>
-        </div>
+        </a>
       </nav>
     </div>
   </div>

@@ -1,0 +1,69 @@
+<div class="page-header">
+  <div>
+    <div class="eyebrow">Konto</div>
+    <h1>Profil</h1>
+  </div>
+</div>
+
+<div class="profile-card card">
+  <div class="profile-avatar"><i class="ti ti-user" aria-hidden="true"></i></div>
+  <div class="profile-info">
+    <div class="profile-name"><%= h(current_user.name) %></div>
+    <div class="profile-email"><%= h(current_user.email) %></div>
+  </div>
+</div>
+
+<div class="profile-section">
+  <h2 class="profile-section-title">Byt lösenord</h2>
+  <% if @password_error %>
+    <div class="form-error"><%= h(@password_error) %></div>
+  <% end %>
+  <% if @password_success %>
+    <div class="form-success"><%= h(@password_success) %></div>
+  <% end %>
+  <form method="post" action="/profile/password" class="profile-form">
+    <input type="hidden" name="_method" value="PATCH">
+    <label for="current_password">Nuvarande lösenord</label>
+    <input type="password" id="current_password" name="current_password" required autocomplete="current-password">
+    <label for="new_password">Nytt lösenord</label>
+    <input type="password" id="new_password" name="new_password" required autocomplete="new-password">
+    <label for="new_password_confirmation">Bekräfta nytt lösenord</label>
+    <input type="password" id="new_password_confirmation" name="new_password_confirmation" required autocomplete="new-password">
+    <button type="submit" class="btn-game btn-game--secondary" style="margin-top: 0.25rem;">Byt lösenord</button>
+  </form>
+</div>
+
+<div class="profile-section">
+  <h2 class="profile-section-title">Övrigt</h2>
+  <a href="/about" class="profile-link-row">
+    <span>Om appen</span>
+    <i class="ti ti-chevron-right" aria-hidden="true"></i>
+  </a>
+  <a href="/privacy" class="profile-link-row">
+    <span>Integritetspolicy</span>
+    <i class="ti ti-chevron-right" aria-hidden="true"></i>
+  </a>
+</div>
+
+<div class="profile-section profile-danger-zone">
+  <form method="post" action="/logout">
+    <input type="hidden" name="_method" value="DELETE">
+    <button type="submit" class="btn-game btn-game--secondary" style="width: 100%;">Logga ut</button>
+  </form>
+
+  <details class="delete-account">
+    <summary class="delete-account-toggle">Radera konto</summary>
+    <div class="delete-account-body">
+      <p>Det här tar bort ditt konto och alla dina resor permanent. Kan inte ångras.</p>
+      <% if @delete_error %>
+        <div class="form-error"><%= h(@delete_error) %></div>
+      <% end %>
+      <form method="post" action="/profile" class="profile-form">
+        <input type="hidden" name="_method" value="DELETE">
+        <label for="delete_password">Bekräfta med ditt lösenord</label>
+        <input type="password" id="delete_password" name="password" required autocomplete="current-password">
+        <button type="submit" class="btn-game btn-game--danger" style="margin-top: 0.25rem;">Radera mitt konto</button>
+      </form>
+    </div>
+  </details>
+</div>
