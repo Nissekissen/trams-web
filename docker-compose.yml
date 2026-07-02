@@ -1,0 +1,29 @@
+networks:
+  web:
+    external: true
+
+services:
+  trams-app:
+    build: .
+    container_name: trams-app
+    restart: unless-stopped
+    networks: [web]
+    environment:
+      RACK_ENV: production
+      DATABASE_URL: postgres://trams:${TRAMS_DB_PASSWORD}@trams-db:5432/trams
+      SESSION_SECRET: ${SESSION_SECRET}
+    depends_on: [trams-db]
+
+  trams-db:
+    image: postgres:16-alpine
+    container_name: trams-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: trams
+      POSTGRES_USER: trams
+      POSTGRES_PASSWORD: ${TRAMS_DB_PASSWORD}
+    volumes:
+      - trams_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  trams_postgres_data:

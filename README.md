@@ -1,64 +1,63 @@
 # Trams
 
-En liten app för att hålla koll på spårvagnar och vilken modell de är av.
-Samma uppbyggnad som middagsboken men utan inloggning.
+Track the trams you've ridden in Gothenburg. Log rides, collect vehicles, complete model sets, cover all 12 lines.
 
-## Tekniken
+Built with Ruby and Sinatra. Mobile-first, no tracking, open source.
 
-- **Sinatra** (Ruby webramverk, inget Rails)
-- **ActiveRecord** för databasen, med vanliga migreringar i `db/migrate/`.
-  `rake db:migrate` kör nya migreringar och skriver om `db/schema.rb` —
-  ändra strukturen genom att lägga till en ny migrering, inte genom att
-  redigera `schema.rb` direkt.
-- **ERB**-mallar, ren CSS, ingen JavaScript-ramverk
-- **SQLite** lokalt, **Postgres** i produktion (styrs av miljövariabeln
-  `DATABASE_URL`)
+## Stack
 
-## Komma igång lokalt
+- **Ruby / Sinatra** — single-file app, no Rails
+- **ActiveRecord** — migrations in `db/migrate/`, SQLite locally, Postgres in production
+- **ERB** — server-rendered templates, no frontend framework
+- **Plain CSS** — no build step
 
-Du behöver Ruby 3.1 eller senare installerat.
+## Getting started
+
+Requires Ruby 3.1+.
 
 ```bash
 bundle install
 rake db:migrate
-bundle exec rackup -p 4567
+rake dev          # starts server on port 3000 with auto-restart
 ```
 
-Öppna sedan `http://localhost:4567` i webbläsaren.
+Open `http://localhost:3000`.
 
-## Produktion (Postgres)
+## Environment variables
 
-Sätt miljövariabeln `DATABASE_URL` till din Postgres-anslutning, t.ex.:
+| Variable | Required | Description |
+|---|---|---|
+| `DATABASE_URL` | Production | Postgres connection string. If unset, SQLite is used. |
+| `SESSION_SECRET` | Production | Secret key for cookie signing. |
+| `RACK_ENV` | Production | Set to `production`. |
+
+## Docker
 
 ```bash
-export DATABASE_URL="postgres://user:password@host:5432/trams"
-export RACK_ENV=production
-bundle install
-rake db:migrate
-bundle exec puma -p 4567
+docker compose up --build
 ```
 
-Så länge `DATABASE_URL` är satt används Postgres istället för SQLite — ingen
-övrig kod behöver ändras.
+## Database
 
-## Struktur
-
-```
-app.rb                  Sinatra-appen: alla routes
-config/environment.rb   Databaskoppling, laddar modeller
-models/tram.rb           Spårvagn, hör till en modell
-models/model.rb          Spårvagnsmodell (t.ex. "M32", "A36")
-db/migrate/              Migreringar — varje strukturändring som en egen fil
-db/schema.rb             Autogenererad ögonblicksbild (skriv inte i den direkt)
-views/                   ERB-mallar, en mapp per resurs
-public/css/style.css     Stilmall (samma profil som middagsboken, blå accent)
+```bash
+rake db:migrate       # apply pending migrations
+rake db:rollback      # roll back the last migration
 ```
 
-## Att tänka på
+Schema changes always go through a new file in `db/migrate/` — never edit `schema.rb` directly.
 
-Appen saknar inloggning. Om den ska nås över internet och innehåller
-känsligt innehåll, lägg ett lösenordsskydd framför den (t.ex. Basic Auth i
-en reverse proxy, eller kopiera autentiseringsmönstret från middagsboken)
-innan den exponeras.
+## Project structure
 
+```
+app.rb                    All routes (single Sinatra::Base class)
+config/environment.rb     Database connection and model loading
+models/                   ActiveRecord models
+views/                    ERB templates, one subfolder per resource
+public/css/style.css      Stylesheet
+db/migrate/               Migrations
+db/schema.rb              Auto-generated — do not edit directly
+```
 
+## License
+
+MIT © Nils Lindblad
