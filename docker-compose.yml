@@ -7,7 +7,9 @@ services:
     build: .
     container_name: trams-app
     restart: unless-stopped
-    networks: [web]
+    networks:
+      - web
+      - default
     environment:
       RACK_ENV: production
       DATABASE_URL: postgres://trams:${TRAMS_DB_PASSWORD}@trams-db:5432/trams
