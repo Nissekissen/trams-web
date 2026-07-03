@@ -12,8 +12,95 @@ class TramsApi < Sinatra::Base
     set :method_override, true
   end
 
+  before do
+    if request.media_type == 'application/json'
+      body = request.body.read
+      JSON.parse(body).each { |k, v| params[k] = v } unless body.empty?
+    end
+  end
+
   before '/*' do
-    @current_user = User.find(1) # TODO: replace with real session/token check
+    next if request.path_info.start_with?('/auth')
+
+    token = request.env['HTTP_AUTHORIZATION']&.sub(/^Bearer /, '')
+    halt 401, { error: "Unauthorized" }.to_json if token.nil? || token.empty?
+
+    @current_user = User.find_by(api_token: token)
+    halt 401, { error: "Unauthorized" }.to_json unless @current_user
+  end
+
+  namespace '/auth' do
+    post '/check-email' do
+      # get the email and check if an account exists
+      # Return either { status: "new" }, { status: "has_password" }, { status: "needs_password" }
+      email = params[:email].downcase
+      # make sure its a valid email
+      unless User.validate_email(email)
+        halt 400, { error: "Invalid email" }.to_json
+      end
+
+      user = User.find_by(email: email)
+      p user
+      if user.nil?
+        { status: "new" }.to_json
+      elsif user.password_set
+        { status: "has_password" }.to_json
+      else
+        { status: "needs_password" }.to_json
+      end
+    end
+
+    post '/login' do
+      email = params[:email].downcase
+      password = params[:password]
+      user = User.find_by(email: email)
+      if user.nil? || !user.password_set
+        p "invalid credentials"
+        halt 401, { error: "Invalid credentials" }.to_json
+      end
+
+      if !user.authenticate(password)
+        p "invalid credentials"
+        halt 401, { error: "Invalid credentials" }.to_json
+      end
+
+      {
+        "token": user.generate_token,
+        "user": {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          riddenTramIds: user.ridden_tram_ids,
+          stats: user.stats
+        }
+      }.to_json
+    end
+
+    post '/signup' do
+      email = params[:email].downcase
+      password = params[:password]
+      password_confirmation = params[:password_confirmation]
+      name = params[:name]
+
+      user = User.new(email: email, name: name)
+      user.password = password
+      user.password_confirmation = password_confirmation
+
+      if user.save
+        {
+          "token": user.generate_token,
+          "user": {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            riddenTramIds: user.ridden_tram_ids,
+            stats: user.stats
+          }
+        }.to_json
+      else
+        halt 400, { error: user.errors.full_messages.join(", ") }.to_json
+      end
+    end
   end
 
   get '/trams' do
@@ -60,8 +147,15 @@ class TramsApi < Sinatra::Base
     rides.map do |ride|
       {
         id: ride.id,
-        tram: { id: ride.tram.id, number: ride.tram.number, name: ride.tram.name, model: { id: ride.tram.model.id, name: ride.tram.model.name } },
-        line: { id: ride.line.id, name: ride.line.name },
+        tram: {
+          id: ride.tram.id,
+          number: ride.tram.number,
+          name: ride.tram.name,
+          description: ride.tram.description,
+          model: { id: ride.tram.model.id, name: ride.tram.model.name },
+          linesSeenOn: ride.tram.lines_seen_on.map(&:to_s)
+        },
+        line: ride.line.to_s,
         occuredAt: ride.ridden_on
       }
     end.to_json

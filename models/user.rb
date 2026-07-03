@@ -18,6 +18,15 @@ class User < ActiveRecord::Base
     rides.distinct.pluck(:tram_id)
   end
 
+  def self.validate_email(email)
+    email =~ URI::MailTo::EMAIL_REGEXP
+  end
+
+  def generate_token
+    update!(api_token: SecureRandom.hex(32))
+    api_token
+  end
+
   def stats
     week_start = Date.today - ((Date.today.wday - 1) % 7)
 
