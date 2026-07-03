@@ -7,4 +7,8 @@ class Tram < ActiveRecord::Base
   def self.ordered
     order(:number)
   end
+
+  def lines_seen_on
+    rides.distinct.pluck(:line).sort
+  end
 end
