@@ -27,6 +27,16 @@ class User < ActiveRecord::Base
     api_token
   end
 
+  def to_api_hash
+    {
+      id: id,
+      name: name,
+      email: email,
+      riddenTramIds: ridden_tram_ids,
+      stats: stats
+    }
+  end
+
   def stats
     week_start = Date.today - ((Date.today.wday - 1) % 7)
 

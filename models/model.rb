@@ -6,4 +6,11 @@ class Model < ActiveRecord::Base
   def self.ordered
     order(:name)
   end
+
+  def to_api_hash
+    {
+      id: id,
+      name: name,
+    }
+  end
 end

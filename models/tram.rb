@@ -11,4 +11,13 @@ class Tram < ActiveRecord::Base
   def lines_seen_on
     rides.distinct.pluck(:line).sort
   end
+
+  def to_api_hash
+    {
+      id: id,
+      number: number,
+      model: model.to_api_hash,
+      linesSeenOn: lines_seen_on.map(&:to_s),
+    }
+  end
 end

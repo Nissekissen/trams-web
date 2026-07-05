@@ -66,13 +66,7 @@ class TramsApi < Sinatra::Base
 
       {
         "token": user.generate_token,
-        "user": {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          riddenTramIds: user.ridden_tram_ids,
-          stats: user.stats
-        }
+        "user": user.to_api_hash
       }.to_json
     end
 
@@ -89,13 +83,7 @@ class TramsApi < Sinatra::Base
       if user.save
         {
           "token": user.generate_token,
-          "user": {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            riddenTramIds: user.ridden_tram_ids,
-            stats: user.stats
-          }
+          "user": user.to_api_hash
         }.to_json
       else
         halt 400, { error: user.errors.full_messages.join(", ") }.to_json
@@ -110,14 +98,7 @@ class TramsApi < Sinatra::Base
 
     trams = Tram.all
     trams.map do |tram|
-      {
-        id: tram.id,
-        number: tram.number,
-        name: tram.name,
-        description: tram.description,
-        model: { id: tram.model.id, name: tram.model.name },
-        linesSeenOn: tram.lines_seen_on.map(&:to_s)
-      }
+      tram.to_api_hash
     end.to_json
   end
 
@@ -125,13 +106,7 @@ class TramsApi < Sinatra::Base
     # Returns logged in user and some stats
     # id, name, email, riddenTramIds (list of tram ids), stats (rideCount, riddenLineCount, riddenTramCount, totalTramCount, ridesThisWeek)
 
-    {
-      id: @current_user.id,
-      name: @current_user.name,
-      email: @current_user.email,
-      riddenTramIds: @current_user.ridden_tram_ids,
-      stats: @current_user.stats
-    }.to_json
+    @current_user.to_api_hash.to_json
   end
 
   get '/me/stats' do
@@ -143,27 +118,27 @@ class TramsApi < Sinatra::Base
   get '/me/rides' do
     # Returns the user's rides as a flat list
     # id, tram, line, occuredAt
-    rides = @current_user.rides
+    limit = params['limit'] || 10
+    rides = @current_user.rides.order(ridden_on: :desc, id: :desc).limit(limit)
     rides.map do |ride|
-      {
-        id: ride.id,
-        tram: {
-          id: ride.tram.id,
-          number: ride.tram.number,
-          name: ride.tram.name,
-          description: ride.tram.description,
-          model: { id: ride.tram.model.id, name: ride.tram.model.name },
-          linesSeenOn: ride.tram.lines_seen_on.map(&:to_s)
-        },
-        line: ride.line.to_s,
-        occuredAt: ride.ridden_on
-      }
+      ride.to_api_hash
     end.to_json
   end
 
   post '/rides' do
-    #TODO!
+    # params: tramId, lineNumber, riddenOn
+    # returns: { ride, user }
 
+    tram_id = params['tramId']
+    line_number = params['lineNumber']
+    ridden_on = params['riddenOn']
+
+    ride = Ride.new(tram_id: tram_id, user_id: @current_user.id, line: line_number, ridden_on: ridden_on)
+    ride.save
+
+    p({ ride: ride.to_api_hash, user: @current_user.to_api_hash }.to_json)
+    # TODO! add error handling here
+    { ride: ride.to_api_hash, user: @current_user.to_api_hash }.to_json
   end
 
   delete '/rides/:id' do

@@ -27,4 +27,13 @@ class Ride < ActiveRecord::Base
   def self.color_for(line)
     LINE_COLORS.fetch(line)
   end
+
+  def to_api_hash
+    {
+      id: id,
+      tram: tram.to_api_hash,
+      line: line.to_s,
+      riddenOn: ridden_on
+    }
+  end
 end
