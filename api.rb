@@ -55,13 +55,11 @@ class TramsApi < Sinatra::Base
       password = params[:password]
       user = User.find_by(email: email)
       if user.nil? || !user.password_set
-        p "invalid credentials"
-        halt 401, { error: "Invalid credentials" }.to_json
+        halt 401, { error: "Wrong username/password" }.to_json
       end
 
       if !user.authenticate(password)
-        p "invalid credentials"
-        halt 401, { error: "Invalid credentials" }.to_json
+        halt 401, { error: "Wrong username/password" }.to_json
       end
 
       {
@@ -97,9 +95,7 @@ class TramsApi < Sinatra::Base
     # id, number, name?, description?, model (id, name), linesSeenOn (list of strings)
 
     trams = Tram.all
-    trams.map do |tram|
-      tram.to_api_hash
-    end.to_json
+    trams.map(&:to_api_hash).to_json
   end
 
   get '/me' do
@@ -120,9 +116,7 @@ class TramsApi < Sinatra::Base
     # id, tram, line, occuredAt
     limit = params['limit'] || 10
     rides = @current_user.rides.order(ridden_on: :desc, id: :desc).limit(limit)
-    rides.map do |ride|
-      ride.to_api_hash
-    end.to_json
+    rides.map(&:to_api_hash).to_json
   end
 
   post '/rides' do
@@ -136,7 +130,6 @@ class TramsApi < Sinatra::Base
     ride = Ride.new(tram_id: tram_id, user_id: @current_user.id, line: line_number, ridden_on: ridden_on)
     ride.save
 
-    p({ ride: ride.to_api_hash, user: @current_user.to_api_hash }.to_json)
     # TODO! add error handling here
     { ride: ride.to_api_hash, user: @current_user.to_api_hash }.to_json
   end
