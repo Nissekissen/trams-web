@@ -368,7 +368,9 @@ class TramsApp < Sinatra::Base
   end
 
   delete '/rides/:id' do
+    require_login
     ride = Ride.find(params['id'])
+    halt 401 if ride.user_id != @current_user.id && !@current_user.is_admin
     tram_id = ride.tram_id
     ride.destroy
     redirect "/trams/#{tram_id}"

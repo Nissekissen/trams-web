@@ -36,7 +36,14 @@
           <span class="recent-ride-num"><%= h(ride.tram.number) %></span>
           <span class="recent-ride-model"><%= h(ride.tram.model.name) %></span>
         </div>
+        <div class="recent-ride-left-box">
+        <form method="post" action="/rides/<%= ride.id %>" class="inline delete-ride-btn-wrapper"
+              onsubmit="return confirm('Ta bort resan? Detta går inte att ångra.');">
+          <input type="hidden" name="_method" value="DELETE">
+          <button type="submit" class="btn btn-danger btn-sm">Ta bort</button>
+        </form>
         <div class="recent-ride-date"><%= ride.ridden_on.strftime('%-d %b') %></div>
+        </div>
       </div>
     <% end %>
   </div>
