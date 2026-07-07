@@ -1,0 +1,51 @@
+<%#
+  Locals:
+    user     - the new User
+    app_url  - base URL of the app, e.g. "https://trams.app"
+-%>
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Välkommen till Trams</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600&display=swap">
+  <style>
+    body { margin: 0; padding: 0; background: #f1f0eb; font-family: 'Inter', system-ui, sans-serif; color: #2a2723; }
+    .wrap { max-width: 480px; margin: 0 auto; padding: 32px 20px; }
+    .brand { font-family: 'Space Grotesk', system-ui, sans-serif; font-weight: 700; font-size: 22px; color: #2a4d6e; margin-bottom: 24px; }
+    .card { background: #ffffff; border: 1.5px solid #2a2723; border-radius: 12px; padding: 32px 28px; box-shadow: 3px 3px 0 #2a2723; }
+    h1 { font-family: 'Space Grotesk', system-ui, sans-serif; font-size: 20px; margin: 0 0 12px; }
+    p { font-size: 15px; line-height: 1.6; margin: 0 0 16px; }
+    .btn { display: inline-block; background: #2a4d6e; color: #ffffff !important; text-decoration: none; font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 15px; padding: 12px 24px; border-radius: 8px; border: 1.5px solid #2a2723; box-shadow: 2px 2px 0 #2a2723; }
+    .btn-row { margin: 24px 0 8px; }
+    .muted { color: #8a8378; font-size: 13px; }
+    .footer { text-align: center; padding-top: 24px; }
+    .footer a { color: #8a8378; }
+  </style>
+</head>
+<body>
+  <span style="display: none; max-height: 0; overflow: hidden;">Ditt Trams-konto är klart — dags att logga din första resa.</span>
+
+  <div class="wrap">
+    <div class="brand">Trams<span style="color:#2a4d6e;">.</span></div>
+
+    <div class="card">
+      <h1>Hej<%= ", #{h(user.name)}" if user.name %>! Välkommen till Trams.</h1>
+      <p>Ditt konto är klart och appen är redo att användas. Dags att åka spårvagn.</p>
+
+      <div class="btn-row">
+        <a href="<%= app_url %>" class="btn">Öppna Trams</a>
+      </div>
+
+      <p class="muted">Om knappen inte funkar, kopiera in den här länken i webbläsaren:<br>
+        <a href="<%= app_url %>" style="color:#2a4d6e; word-break: break-all;"><%= app_url %></a>
+      </p>
+    </div>
+
+    <div class="footer muted">
+      Trams · <a href="<%= app_url %>/privacy">Integritetspolicy</a>
+    </div>
+  </div>
+</body>
+</html>

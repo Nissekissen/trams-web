@@ -16,6 +16,11 @@ task :dev do
   exec 'bundle exec rerun -- rackup -p 3000 -o 0.0.0.0'
 end
 
+desc 'Run the test suite'
+task :test do
+  Dir.glob('test/**/*_test.rb').each { |f| require_relative f }
+end
+
 namespace :db do
   desc 'Apply any pending migrations in db/migrate, then refresh db/schema.rb'
   task :migrate do

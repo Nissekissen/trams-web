@@ -1,0 +1,15 @@
+<%#
+  Locals:
+    user        - the User verifying their email
+    verify_url  - full URL to the verify-email endpoint, including the token
+-%>
+Hej<%= " #{user.name}" if user.name %>,
+
+Klicka på länken nedan för att bekräfta din e-postadress och aktivera ditt Trams-konto.
+
+Bekräfta e-post: <%= verify_url %>
+
+Om du inte skapade det här kontot kan du ignorera mejlet.
+
+—
+Trams
