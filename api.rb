@@ -36,7 +36,7 @@ class TramsApi < Sinatra::Base
       email = params[:email].downcase
       # make sure its a valid email
       unless User.validate_email(email)
-        halt 400, { error: "Invalid email" }.to_json
+        halt 422, { error: "Invalid email" }.to_json
       end
 
       user = User.find_by(email: email)
@@ -84,7 +84,7 @@ class TramsApi < Sinatra::Base
           "user": user.to_api_hash
         }.to_json
       else
-        halt 400, { error: user.errors.full_messages.join(", ") }.to_json
+        halt 422, { error: user.errors.full_messages.join(", ") }.to_json
       end
     end
   end
@@ -128,18 +128,20 @@ class TramsApi < Sinatra::Base
     ridden_on = params['riddenOn']
 
     ride = Ride.new(tram_id: tram_id, user_id: @current_user.id, line: line_number, ridden_on: ridden_on)
-    ride.save
 
-    # TODO! add error handling here
-    { ride: ride.to_api_hash, user: @current_user.to_api_hash }.to_json
+    if ride.save
+      { ride: ride.to_api_hash, user: @current_user.to_api_hash }.to_json
+    else
+      halt 422, {error: ride.errors.full_messages.join(", ")}.to_json
+    end
   end
 
   delete '/rides/:id' do
-    #TODO!
+    ride = Ride.find_by(id: params['id'], user: @current_user)
+    halt 404 unless ride
 
+    ride.destroy
+    status 200
+    { user: @current_user.to_api_hash }.to_json
   end
-
-
-
-
 end
