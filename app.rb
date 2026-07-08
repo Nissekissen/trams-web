@@ -205,6 +205,20 @@ class TramsApp < Sinatra::Base
     erb :'auth/login', layout: false
   end
 
+  post '/auth/google' do
+    id_token = JSON.parse(request.body.read)['id_token']
+
+    begin
+      user = User.from_google_id_token(id_token)
+    rescue Google::Auth::IDTokens::VerificationError
+      halt 401, 'Ogiltig Google-inloggning'
+    end
+    halt 401, 'E-postadressen är inte verifierad hos Google' if user.nil?
+
+    session[:user_id] = user.id
+    redirect '/'
+  end
+
   delete '/logout' do
     session.clear
     redirect '/login'

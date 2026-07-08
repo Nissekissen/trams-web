@@ -53,31 +53,11 @@ class TramsApi < Sinatra::Base
       halt 400, { error: "Missing id_token" }.to_json if id_token.nil? || id_token.empty?
 
       begin
-        payload = Google::Auth::IDTokens.verify_oidc(id_token, aud: ENV.fetch('GOOGLE_CLIENT_ID'))
+        user = User.from_google_id_token(id_token)
       rescue Google::Auth::IDTokens::VerificationError
         halt 401, { error: "Invalid Google Token" }.to_json
       end
-
-      halt 401, { error: "Email not verified" }.to_json unless payload['email_verified']
-
-      user = User.find_by(google_uid: payload['sub'])
-
-      if user.nil?
-        user = User.find_by(email: payload['email'])
-        if user
-          # Link existing account to google
-          user.update!(google_uid: payload['sub'])
-        else
-          # Create new account
-          user = User.create!(
-            email: payload['email'],
-            name: payload['name'],
-            google_uid: payload['sub'],
-            password: SecureRandom.hex(32),
-            password_set: false
-          )
-        end
-      end
+      halt 401, { error: "Email not verified" }.to_json if user.nil?
 
       {
         token: user.generate_token,

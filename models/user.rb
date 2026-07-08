@@ -27,6 +27,32 @@ class User < ActiveRecord::Base
     api_token
   end
 
+  # Verifies a Google ID token and finds, links, or creates the matching User.
+  # Returns nil if Google reports the email as unverified.
+  # Raises Google::Auth::IDTokens::VerificationError for a forged/expired/wrong-audience token.
+  def self.from_google_id_token(id_token)
+    payload = Google::Auth::IDTokens.verify_oidc(id_token, aud: ENV.fetch('GOOGLE_CLIENT_ID'))
+    return nil unless payload['email_verified']
+
+    user = find_by(google_uid: payload['sub'])
+    return user if user
+
+    user = find_by(email: payload['email'])
+    if user
+      user.update!(google_uid: payload['sub'])
+    else
+      user = create!(
+        email: payload['email'],
+        name: payload['name'],
+        google_uid: payload['sub'],
+        password: SecureRandom.hex(32),
+        password_set: false
+      )
+    end
+
+    user
+  end
+
   def to_api_hash
     {
       id: id,

@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="/css/style.css?v=<%= File.mtime(File.join(settings.public_folder, 'css', 'style.css')).to_i %>">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <script src="https://accounts.google.com/gsi/client" async defer onload="initGoogleSignIn()"></script>
 </head>
 <body class="auth-page">
   <div class="auth-wrap">
@@ -20,6 +21,10 @@
       <% if @error %>
         <div class="form-error" style="margin-bottom: 0.25rem;"><%= h(@error) %></div>
       <% end %>
+
+      <div id="g_id_signin_button"></div>
+
+      <div class="auth-divider" style="margin: 1rem 0; text-align: center; color: var(--color-muted); font-size: 0.85rem;">eller</div>
 
       <form method="post" action="/login" class="profile-form">
         <label for="email">E-post</label>
@@ -35,5 +40,37 @@
     <p class="auth-footer">Inget konto? <a href="/signup">Kom igång</a></p>
 
   </div>
+
+  <script>
+    function initGoogleSignIn() {
+      google.accounts.id.initialize({
+        client_id: "<%= ENV['GOOGLE_CLIENT_ID'] %>",
+        callback: handleGoogleLogin
+      });
+
+      var container = document.getElementById('g_id_signin_button');
+      google.accounts.id.renderButton(container, {
+        theme: 'outline',
+        size: 'large',
+        text: 'continue_with',
+        shape: 'rectangular',
+        width: container.offsetWidth
+      });
+    }
+
+    function handleGoogleLogin(response) {
+      fetch('/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id_token: response.credential })
+      }).then(function (res) {
+        if (res.ok) {
+          window.location.href = res.url;
+        } else {
+          window.location.reload();
+        }
+      });
+    }
+  </script>
 </body>
 </html>
