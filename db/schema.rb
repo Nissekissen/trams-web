@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_07_03_000002) do
+ActiveRecord::Schema[7.2].define(version: 2026_07_08_000002) do
   create_table "models", force: :cascade do |t|
     t.string "name", null: false
     t.text "description"
@@ -48,8 +48,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_07_03_000002) do
     t.boolean "is_admin", default: false, null: false
     t.boolean "password_set", default: true, null: false
     t.string "api_token"
+    t.string "google_uid"
     t.index ["api_token"], name: "index_users_on_api_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["google_uid"], name: "index_users_on_google_uid", unique: true
   end
 
   add_foreign_key "rides", "trams"

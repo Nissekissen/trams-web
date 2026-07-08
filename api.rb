@@ -30,26 +30,6 @@ class TramsApi < Sinatra::Base
   end
 
   namespace '/auth' do
-    post '/check-email' do
-      # get the email and check if an account exists
-      # Return either { status: "new" }, { status: "has_password" }, { status: "needs_password" }
-      email = params[:email].downcase
-      # make sure its a valid email
-      unless User.validate_email(email)
-        halt 422, { error: "Invalid email" }.to_json
-      end
-
-      user = User.find_by(email: email)
-      p user
-      if user.nil?
-        { status: "new" }.to_json
-      elsif user.password_set
-        { status: "has_password" }.to_json
-      else
-        { status: "needs_password" }.to_json
-      end
-    end
-
     post '/login' do
       email = params[:email].downcase
       password = params[:password]
@@ -68,25 +48,43 @@ class TramsApi < Sinatra::Base
       }.to_json
     end
 
-    post '/signup' do
-      email = params[:email].downcase
-      password = params[:password]
-      password_confirmation = params[:password_confirmation]
-      name = params[:name]
+    post '/google' do
+      id_token = params[:id_token]
+      halt 400, { error: "Missing id_token" }.to_json if id_token.nil? || id_token.empty?
 
-      user = User.new(email: email, name: name)
-      user.password = password
-      user.password_confirmation = password_confirmation
-
-      if user.save
-        {
-          "token": user.generate_token,
-          "user": user.to_api_hash
-        }.to_json
-      else
-        halt 422, { error: user.errors.full_messages.join(", ") }.to_json
+      begin
+        payload = Google::Auth::IDTokens.verify_oidc(id_token, aud: ENV.fetch('GOOGLE_CLIENT_ID'))
+      rescue Google::Auth::IDTokens::VerificationError
+        halt 401, { error: "Invalid Google Token" }.to_json
       end
+
+      halt 401, { error: "Email not verified" }.to_json unless payload['email_verified']
+
+      user = User.find_by(google_uid: payload['sub'])
+
+      if user.nil?
+        user = User.find_by(email: payload['email'])
+        if user
+          # Link existing account to google
+          user.update!(google_uid: payload['sub'])
+        else
+          # Create new account
+          user = User.create!(
+            email: payload['email'],
+            name: payload['name'],
+            google_uid: payload['sub'],
+            password: SecureRandom.hex(32),
+            password_set: false
+          )
+        end
+      end
+
+      {
+        token: user.generate_token,
+        user: user.to_api_hash
+      }.to_json
     end
+
   end
 
   get '/trams' do
@@ -126,6 +124,8 @@ class TramsApi < Sinatra::Base
     tram_id = params['tramId']
     line_number = params['lineNumber']
     ridden_on = params['riddenOn']
+
+    halt 422, { error: "Ogiltig spårvagn" }.to_json unless Tram.exists?(tram_id)
 
     ride = Ride.new(tram_id: tram_id, user_id: @current_user.id, line: line_number, ridden_on: ridden_on)
 
