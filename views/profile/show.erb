@@ -107,8 +107,10 @@
       <% end %>
       <form method="post" action="/profile" class="profile-form">
         <input type="hidden" name="_method" value="DELETE">
-        <label for="delete_password">Bekräfta med ditt lösenord</label>
-        <input type="password" id="delete_password" name="password" required autocomplete="current-password">
+        <% if current_user.password_set? %>
+          <label for="delete_password">Bekräfta med ditt lösenord</label>
+          <input type="password" id="delete_password" name="password" required autocomplete="current-password">
+        <% end %>
         <button type="submit" class="btn-game btn-game--danger" style="margin-top: 0.25rem;">Radera mitt konto</button>
       </form>
     </div>

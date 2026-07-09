@@ -330,7 +330,7 @@ class TramsApp < Sinatra::Base
   delete '/profile' do
     require_login
     user = current_user
-    unless user.authenticate(params['password'])
+    if user.password_set? && !user.authenticate(params['password'])
       @delete_error = 'Fel lösenord'
       return erb :'profile/show'
     end

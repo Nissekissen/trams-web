@@ -36,3 +36,5 @@ else
 end
 
 Dir[File.join(ROOT, 'models', '*.rb')].sort.each { |file| require file }
+
+require_relative 'initializers/rack_attack'

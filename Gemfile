@@ -12,6 +12,7 @@ gem 'puma', '~> 6.4'
 gem 'bcrypt', '~> 3.1'
 gem 'resend'
 gem 'googleauth'
+gem 'rack-attack'
 
 # Ruby 3.4+ dropped these from the default standard library. ActiveSupport
 # (a dependency of ActiveRecord) still expects to be able to require them,
