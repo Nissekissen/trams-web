@@ -3,6 +3,7 @@ require_relative '../mailer'
 
 class MailerTest < Minitest::Test
   def setup
+    super
     @user = User.new(name: 'Anna', email: 'anna@example.com')
   end
 
