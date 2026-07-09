@@ -281,13 +281,15 @@ class TramsApp < Sinatra::Base
   end
 
   get '/about' do
-    require_login
     erb :'about/index'
   end
 
   get '/privacy' do
-    require_login
     erb :privacy
+  end
+
+  get '/terms' do
+    erb :terms
   end
 
   patch '/profile/password' do
