@@ -27,11 +27,16 @@ class User < ActiveRecord::Base
     api_token
   end
 
+  # Raises Google::Auth::IDTokens::VerificationError for a forged/expired/wrong-audience token.
+  def self.verify_google_id_token(id_token)
+    Google::Auth::IDTokens.verify_oidc(id_token, aud: ENV.fetch('GOOGLE_CLIENT_ID'))
+  end
+
   # Verifies a Google ID token and finds, links, or creates the matching User.
   # Returns nil if Google reports the email as unverified.
   # Raises Google::Auth::IDTokens::VerificationError for a forged/expired/wrong-audience token.
   def self.from_google_id_token(id_token)
-    payload = Google::Auth::IDTokens.verify_oidc(id_token, aud: ENV.fetch('GOOGLE_CLIENT_ID'))
+    payload = verify_google_id_token(id_token)
     return nil unless payload['email_verified']
 
     user = find_by(google_uid: payload['sub'])

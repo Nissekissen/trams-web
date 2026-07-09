@@ -51,10 +51,6 @@ class TramsApp < Sinatra::Base
       params.slice('user_id', 'tram_id', 'line', 'ridden_on')
     end
 
-    def user_params
-      params.slice('name', 'email', 'password', 'password_confirmation')
-    end
-
     def load_home_data(user_id)
       @models          = Model.includes(:trams).order(:name)
       @total_trams     = Tram.count
@@ -225,7 +221,7 @@ class TramsApp < Sinatra::Base
   end
 
   get '/signup' do
-    session.delete(:signup_email)
+    session.delete(:claim_user_id)
     @email = params['email']
     erb :'auth/signup_step1', layout: false
   end
@@ -243,18 +239,13 @@ class TramsApp < Sinatra::Base
       return erb :'auth/signup_step1', layout: false
     end
     existing = User.find_by(email: email)
-    if existing
-      if existing.password_set?
-        @error = 'Den e-postadressen används redan'
-        @email = email
-        return erb :'auth/signup_step1', layout: false
-      else
-        session[:claim_user_id] = existing.id
-        redirect '/signup/claim'
-      end
+    if existing && !existing.password_set?
+      session[:claim_user_id] = existing.id
+      redirect '/signup/claim'
     else
-      session[:signup_email] = email
-      redirect '/signup/details'
+      @error = 'Inget konto hittades för den e-postadressen. Skapa ett nytt konto med Google på inloggningssidan.'
+      @email = email
+      erb :'auth/signup_step1', layout: false
     end
   end
 
@@ -278,29 +269,6 @@ class TramsApp < Sinatra::Base
     else
       @errors = @user.errors.full_messages
       erb :'auth/claim', layout: false
-    end
-  end
-
-  get '/signup/details' do
-    @email = session[:signup_email]
-    redirect '/signup' unless @email
-    @name = params['name']
-    erb :'auth/signup_step2', layout: false
-  end
-
-  post '/signup' do
-    email = session[:signup_email]
-    redirect '/signup' unless email
-    @user = User.new(user_params.merge('email' => email, 'password_set' => true))
-    if @user.save
-      session.delete(:signup_email)
-      session[:user_id] = @user.id
-      redirect '/'
-    else
-      @email = email
-      @name  = params['name']
-      @errors = @user.errors.full_messages
-      erb :'auth/signup_step2', layout: false
     end
   end
 
@@ -339,6 +307,22 @@ class TramsApp < Sinatra::Base
       @password_error = user.errors.full_messages.first
     end
     erb :'profile/show'
+  end
+
+  post '/profile/link_google' do
+    require_login
+    id_token = JSON.parse(request.body.read)['id_token']
+
+    begin
+      payload = User.verify_google_id_token(id_token)
+    rescue Google::Auth::IDTokens::VerificationError
+      halt 401, 'Ogiltig Google-inloggning'
+    end
+    halt 401, 'E-postadressen är inte verifierad hos Google' unless payload['email_verified']
+    halt 409, 'Det Google-kontot är redan länkat till ett annat Trams-konto' if User.where(google_uid: payload['sub']).where.not(id: current_user.id).exists?
+
+    current_user.update!(google_uid: payload['sub'])
+    redirect '/profile'
   end
 
   delete '/profile' do
