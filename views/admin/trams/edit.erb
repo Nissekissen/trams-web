@@ -8,7 +8,7 @@
 <div class="card">
   <form method="post" action="/admin/trams/<%= @tram.id %>">
     <input type="hidden" name="_method" value="PUT">
-    <%= erb :'trams/_form' %>
+    <%= erb :'admin/trams/_form' %>
     <div class="form-actions">
       <button type="submit" class="btn">Spara ändringar</button>
       <a href="/admin/trams" class="btn btn-secondary">Avbryt</a>
