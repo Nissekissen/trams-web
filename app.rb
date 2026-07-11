@@ -77,7 +77,8 @@ class TramsApp < Sinatra::Base
   # Dashboard
   # ---------------------------------------------------------------
   get '/' do
-    require_login
+    return erb :landing, layout: :layout_landing unless logged_in?
+
     load_home_data(current_user.id)
     erb :index
   end
@@ -281,15 +282,15 @@ class TramsApp < Sinatra::Base
   end
 
   get '/about' do
-    erb :'about/index'
+    erb :'about/index', layout: (logged_in? ? :layout : :layout_landing)
   end
 
   get '/privacy' do
-    erb :privacy
+    erb :privacy, layout: (logged_in? ? :layout : :layout_landing)
   end
 
   get '/terms' do
-    erb :terms
+    erb :terms, layout: (logged_in? ? :layout : :layout_landing)
   end
 
   patch '/profile/password' do
