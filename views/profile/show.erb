@@ -44,6 +44,11 @@
     <div id="g_id_link_button"></div>
     <script>
       function initGoogleLinkButton() {
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', initGoogleLinkButton);
+          return;
+        }
+
         google.accounts.id.initialize({
           client_id: "<%= ENV['GOOGLE_CLIENT_ID'] %>",
           callback: handleGoogleLink

@@ -42,6 +42,11 @@
 
   <script>
     function initGoogleSignIn() {
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initGoogleSignIn);
+        return;
+      }
+
       google.accounts.id.initialize({
         client_id: "<%= ENV['GOOGLE_CLIENT_ID'] %>",
         callback: handleGoogleLogin
