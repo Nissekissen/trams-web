@@ -29,7 +29,8 @@ class User < ActiveRecord::Base
 
   # Raises Google::Auth::IDTokens::VerificationError for a forged/expired/wrong-audience token.
   def self.verify_google_id_token(id_token)
-    Google::Auth::IDTokens.verify_oidc(id_token, aud: ENV.fetch('GOOGLE_CLIENT_ID'))
+    client_ids = [ENV.fetch('GOOGLE_CLIENT_ID'), ENV['GOOGLE_IOS_CLIENT_ID']].compact
+    Google::Auth::IDTokens.verify_oidc(id_token, aud: client_ids)
   end
 
   # Verifies a Google ID token and finds, links, or creates the matching User.

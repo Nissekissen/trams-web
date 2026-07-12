@@ -6,6 +6,11 @@ class Rack::Attack
   # runs as a single process (no `workers` configured).
   self.cache.store = ActiveSupport::Cache::MemoryStore.new
 
+  # Throttling is real request-rate protection, not app logic under test —
+  # without this, the test suite trips the login throttle after a handful
+  # of auth tests and every later test in the run gets a false 403.
+  self.enabled = false if APP_ENV == 'test'
+
   AUTH_PATHS = ['/login', '/api/auth/login'].freeze
   GOOGLE_AUTH_PATHS = ['/auth/google', '/api/auth/google'].freeze
 

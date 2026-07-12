@@ -7,6 +7,7 @@
 # has data — unlike a full rebuild, it never drops a table you didn't
 # just add a migration for.
 
+ENV['RACK_ENV'] ||= 'test' if ARGV.include?('test')
 require_relative 'config/environment'
 
 MIGRATIONS_PATH = File.join(ROOT, 'db', 'migrate')
