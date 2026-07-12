@@ -1,5 +1,7 @@
 ENV['RACK_ENV'] ||= 'test'
 ENV['GOOGLE_CLIENT_ID'] ||= 'test-client-id'
+ENV['RESEND_TOKEN'] ||= 'test-resend-token'
+ENV['APP_URL'] ||= 'example.com'
 
 require_relative '../config/environment'
 require 'minitest/autorun'
