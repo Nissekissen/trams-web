@@ -22,7 +22,7 @@ require 'active_record'
 require 'logger'
 require 'date'
 
-ActiveRecord::Base.logger = Logger.new($stdout) if APP_ENV == 'development'
+ActiveRecord::Base.logger = Logger.new($stdout, level: Logger::WARN) if APP_ENV == 'development'
 
 if ENV['DATABASE_URL']
   # Production (and anywhere else DATABASE_URL is set): Postgres.

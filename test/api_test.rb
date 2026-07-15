@@ -73,6 +73,16 @@ class ApiTest < Minitest::Test
     assert_equal 401, last_response.status
   end
 
+  def test_login_with_a_missing_email_is_a_bad_request
+    post_json '/auth/login', { password: 'secret123' }
+    assert_equal 400, last_response.status
+  end
+
+  def test_login_with_a_missing_password_is_a_bad_request
+    post_json '/auth/login', { email: 'anna@example.com' }
+    assert_equal 400, last_response.status
+  end
+
   # --- POST /auth/google ----------------------------------------------------
 
   def stub_google_payload(payload)
@@ -137,6 +147,86 @@ class ApiTest < Minitest::Test
     assert_equal 401, last_response.status
   end
 
+  # --- POST /link_google ------------------------------------------------------
+
+  def test_post_link_google_links_the_current_user_and_returns_a_token_and_user
+    payload = { 'sub' => 'google-uid-5', 'email' => 'new@example.com', 'name' => 'New', 'email_verified' => true }
+    token = @user.generate_token
+
+    stub_google_payload(payload) do
+      post_json '/auth/link_google', { id_token: 'fake' }, auth_header(token)
+    end
+
+    assert_equal 200, last_response.status
+    body = JSON.parse(last_response.body)
+    assert body['token']
+    assert_equal @user.id, body['user']['id']
+    assert_equal 'google-uid-5', @user.reload.google_uid
+  end
+
+  def test_post_link_google_requires_authentication
+    post_json '/auth/link_google', { id_token: 'fake' }
+
+    assert_equal 401, last_response.status
+  end
+
+  def test_post_link_google_with_a_missing_id_token_is_a_bad_request
+    token = @user.generate_token
+    post_json '/auth/link_google', {}, auth_header(token)
+
+    assert_equal 400, last_response.status
+  end
+
+  def test_post_link_google_rejects_an_invalid_token
+    token = @user.generate_token
+
+    Google::Auth::IDTokens.stub(:verify_oidc, ->(_token, aud:) { raise Google::Auth::IDTokens::VerificationError, 'bad token' }) do
+      post_json '/auth/link_google', { id_token: 'garbage' }, auth_header(token)
+    end
+
+    assert_equal 401, last_response.status
+  end
+
+  def test_post_link_google_rejects_an_unverified_email
+    payload = { 'sub' => 'google-uid-6', 'email' => 'new2@example.com', 'name' => 'New', 'email_verified' => false }
+    token = @user.generate_token
+
+    stub_google_payload(payload) do
+      post_json '/auth/link_google', { id_token: 'fake' }, auth_header(token)
+    end
+
+    assert_equal 401, last_response.status
+    refute @user.reload.google_uid
+  end
+
+  def test_post_link_google_rejects_a_user_who_already_has_a_linked_google_account
+    @user.update!(google_uid: 'already-linked-uid')
+    payload = { 'sub' => 'google-uid-7', 'email' => 'new3@example.com', 'name' => 'New', 'email_verified' => true }
+    token = @user.generate_token
+
+    stub_google_payload(payload) do
+      post_json '/auth/link_google', { id_token: 'fake' }, auth_header(token)
+    end
+
+    assert_equal 400, last_response.status
+    assert_equal 'already-linked-uid', @user.reload.google_uid
+  end
+
+  def test_post_link_google_rejects_a_google_account_already_linked_to_someone_else
+    User.create!(name: 'Bob', email: 'bob@example.com', password: 'secret123', password_confirmation: 'secret123', google_uid: 'taken-uid')
+    payload = { 'sub' => 'taken-uid', 'email' => 'bob@example.com', 'name' => 'Bob', 'email_verified' => true }
+    token = @user.generate_token
+
+    stub_google_payload(payload) do
+      post_json '/auth/link_google', { id_token: 'fake' }, auth_header(token)
+    end
+
+    assert_equal 400, last_response.status
+    refute @user.reload.google_uid
+  end
+
+
+
   # --- GET /trams -------------------------------------------------------------
 
   def test_get_trams_returns_a_flat_list_with_embedded_model
@@ -178,6 +268,30 @@ class ApiTest < Minitest::Test
 
     ids = JSON.parse(last_response.body).map { |r| r['id'] }
     assert_equal [newer.id, older.id], ids
+  end
+
+  def test_get_me_rides_respects_a_valid_limit
+    token = @user.generate_token
+    3.times { |i| Ride.create!(user: @user, tram: @tram, line: 1, ridden_on: Date.today - i) }
+
+    get '/me/rides', { limit: '2' }, auth_header(token)
+
+    assert_equal 200, last_response.status
+    assert_equal 2, JSON.parse(last_response.body).length
+  end
+
+  def test_get_me_rides_with_a_non_numeric_limit_is_a_bad_request
+    token = @user.generate_token
+    get '/me/rides', { limit: 'abc' }, auth_header(token)
+
+    assert_equal 400, last_response.status
+  end
+
+  def test_get_me_rides_with_a_negative_limit_is_a_bad_request
+    token = @user.generate_token
+    get '/me/rides', { limit: '-1' }, auth_header(token)
+
+    assert_equal 400, last_response.status
   end
 
   # --- POST /rides --------------------------------------------------------

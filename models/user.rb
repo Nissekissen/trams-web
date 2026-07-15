@@ -1,4 +1,8 @@
 class User < ActiveRecord::Base
+  class GoogleEmailNotVerifiedError < StandardError; end
+  class GoogleAccountAlreadyLinkedError < StandardError; end
+
+
   has_many :rides, dependent: :destroy
 
   has_secure_password
@@ -34,11 +38,10 @@ class User < ActiveRecord::Base
   end
 
   # Verifies a Google ID token and finds, links, or creates the matching User.
-  # Returns nil if Google reports the email as unverified.
   # Raises Google::Auth::IDTokens::VerificationError for a forged/expired/wrong-audience token.
   def self.from_google_id_token(id_token)
     payload = verify_google_id_token(id_token)
-    return nil unless payload['email_verified']
+    raise GoogleEmailNotVerifiedError unless payload['email_verified']
 
     user = find_by(google_uid: payload['sub'])
     return user if user
@@ -59,12 +62,27 @@ class User < ActiveRecord::Base
     user
   end
 
+  def self.link_google_id_token(id_token, user)
+    payload = verify_google_id_token(id_token)
+
+
+    raise GoogleEmailNotVerifiedError unless payload['email_verified']
+
+    raise GoogleAccountAlreadyLinkedError if user.google_uid
+    raise GoogleAccountAlreadyLinkedError if where(google_uid: payload['sub']).where.not(id: user.id).exists?
+
+    user.update!(google_uid: payload['sub'])
+    user
+  end
+
   def to_api_hash
+
     {
       id: id,
       name: name,
       email: email,
       riddenTramIds: ridden_tram_ids,
+      googleLinked: google_uid.present?,
       stats: stats
     }
   end

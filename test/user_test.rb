@@ -69,6 +69,30 @@ class UserTest < Minitest::Test
     assert_equal @user.stats, hash[:stats]
   end
 
+  def test_to_api_hash_reports_google_linked_false_when_not_linked
+    refute @user.to_api_hash[:googleLinked]
+  end
+
+  def test_to_api_hash_reports_google_linked_true_when_linked
+    @user.update!(google_uid: 'some-uid')
+    assert @user.to_api_hash[:googleLinked]
+  end
+
+  def test_verify_google_id_token_accepts_either_the_web_or_ios_client_id_as_audience
+    original_ios_client_id = ENV['GOOGLE_IOS_CLIENT_ID']
+    ENV['GOOGLE_IOS_CLIENT_ID'] = 'ios-client-id'
+    seen_aud = nil
+
+    Google::Auth::IDTokens.stub(:verify_oidc, ->(_token, aud:) { seen_aud = aud; { 'email_verified' => true } }) do
+      User.verify_google_id_token('fake')
+    end
+
+    assert_includes seen_aud, ENV['GOOGLE_CLIENT_ID']
+    assert_includes seen_aud, 'ios-client-id'
+  ensure
+    ENV['GOOGLE_IOS_CLIENT_ID'] = original_ios_client_id
+  end
+
   def test_validate_email_accepts_a_well_formed_address
     assert User.validate_email('someone@example.com')
   end
