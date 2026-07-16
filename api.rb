@@ -19,8 +19,10 @@ class TramsApi < Sinatra::Base
     end
   end
 
+  PUBLIC_PATHS = %w[/auth/login /auth/google /auth/link_google].freeze
+
   before '/*' do
-    next if request.path_info.start_with?('/auth') && request.path_info != '/auth/link_google' # Might need a better filter if more routes in /auth are excluded in the future
+    next if PUBLIC_PATHS.include?(request.path_info)
 
     token = request.env['HTTP_AUTHORIZATION']&.sub(/^Bearer /, '')
     halt 401, { error: "Unauthorized" }.to_json if token.nil? || token.empty?
