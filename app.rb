@@ -40,6 +40,57 @@ class TramsApp < Sinatra::Base
       path == '/' ? request.path_info == '/' : request.path_info.start_with?(path)
     end
 
+    # Ranks lines by ride count, keeps the top 6, and folds the remainder into
+    # an "Övriga linjer" segment. Returns each segment with pre-computed SVG
+    # stroke-dasharray/dashoffset so the view can render a donut without JS.
+    def donut_segments(lines, radius: 66)
+      ranked = lines.map { |num, data| { line: num, rides: data[:rides] } }
+                    .select { |d| d[:rides].positive? }
+                    .sort_by { |d| -d[:rides] }
+      return [] if ranked.empty?
+
+      top  = ranked.first(6)
+      rest = ranked.drop(6)
+
+      segments = top.map do |d|
+        colors = Ride.color_for(d[:line])
+        { label: "Linje #{d[:line]}", rides: d[:rides], bg: colors[:bg], fg: colors[:text], sub: nil }
+      end
+
+      rest_total = rest.sum { |d| d[:rides] }
+      if rest_total.positive?
+        segments << {
+          label: 'Övriga linjer',
+          rides: rest_total,
+          bg: '#b9b3a6',
+          fg: '#2a2723',
+          sub: rest.map { |d| d[:line] }.join(', ')
+        }
+      end
+
+      total = segments.sum { |s| s[:rides] }
+      circumference = 2 * Math::PI * radius
+      offset = 0
+
+      segments.each do |seg|
+        length = (seg[:rides].to_f / total) * circumference
+        seg[:percent]  = ((seg[:rides].to_f / total) * 1000).round / 10.0
+        seg[:dasharray]  = "#{length} #{circumference - length}"
+        seg[:dashoffset] = -offset
+        offset += length
+      end
+
+      segments
+    end
+
+    # Evenly-spaced gridline values (0..max) for the activity bar chart.
+    def activity_gridlines(monthly)
+      max = monthly.map { |m| m[:rides] }.max.to_i
+      return [0] if max.zero?
+
+      [0, (max / 3.0).round, (max * 2 / 3.0).round, max].uniq
+    end
+
     def tram_params
       params.slice('number', 'name', 'description', 'model_id')
     end
@@ -82,6 +133,15 @@ class TramsApp < Sinatra::Base
 
     load_home_data(current_user.id)
     erb :index
+  end
+
+  # ---------------------------------------------------------------
+  # Statistics
+  # ---------------------------------------------------------------
+  get '/statistics' do
+    require_login
+    @stats = current_user.detailed_stats
+    erb :'statistics/show'
   end
 
   # ---------------------------------------------------------------

@@ -1,0 +1,180 @@
+<a class="back-link" href="/">
+  <i class="ti ti-arrow-left" aria-hidden="true"></i>
+  Till start
+</a>
+
+<div class="page-header">
+  <div>
+    <div class="eyebrow">Statistik</div>
+    <h1>Din resehistorik</h1>
+    <% if @stats[:since] %>
+      <p class="muted" style="margin:0;">
+        <%= @stats[:total_rides] %> <%= @stats[:total_rides] == 1 ? 'resa' : 'resor' %> loggade sedan <%= @stats[:since].strftime('%-d %b %Y') %>
+      </p>
+    <% end %>
+  </div>
+</div>
+
+<% if @stats[:total_rides].zero? %>
+
+  <div class="card stats-empty">
+    <p style="margin:0;">Du har inte loggat några resor än. Logga din första resa så börjar statistiken fyllas på här.</p>
+  </div>
+
+<% else %>
+
+  <div class="highlight-row">
+    <div class="highlight-card">
+      <div class="highlight-label">Mest ridna linjen</div>
+      <% if @stats[:highlights][:top_line] %>
+        <div class="highlight-value">Linje <%= @stats[:highlights][:top_line][:line] %></div>
+        <div class="highlight-sub"><%= @stats[:highlights][:top_line][:rides] %> resor</div>
+      <% else %>
+        <div class="highlight-value muted">—</div>
+      <% end %>
+    </div>
+    <div class="highlight-card">
+      <div class="highlight-label">Längsta svit</div>
+      <% streak = @stats[:highlights][:longest_streak] %>
+      <% if streak && streak[:days] > 0 %>
+        <div class="highlight-value"><%= streak[:days] %> <%= streak[:days] == 1 ? 'dag' : 'dagar' %></div>
+        <div class="highlight-sub"><%= streak[:from].strftime('%-d %b') %>–<%= streak[:to].strftime('%-d %b %Y') %></div>
+      <% else %>
+        <div class="highlight-value muted">—</div>
+      <% end %>
+    </div>
+    <div class="highlight-card">
+      <div class="highlight-label">Senaste resan</div>
+      <% if @stats[:highlights][:last_ride] %>
+        <% last = @stats[:highlights][:last_ride] %>
+        <div class="highlight-value"><%= last[:date].strftime('%-d %b %Y') %></div>
+        <div class="highlight-sub">Linje <%= last[:line] %> · vagn <%= h(last[:tram_number]) %></div>
+      <% else %>
+        <div class="highlight-value muted">—</div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="progress-header">
+      <h3>Linjetäckning</h3>
+      <% ridden_line_count = @stats[:lines].count { |_, d| d[:rides].positive? } %>
+      <span class="mono muted" style="font-size:0.8rem;"><%= ridden_line_count %> / <%= Ride::LINES.size %></span>
+    </div>
+    <p class="muted" style="font-size:0.85rem; margin-bottom:1rem;">Antal resor per linje.</p>
+    <div class="line-pills">
+      <% Ride::LINES.each do |line| %>
+        <% rides = @stats[:lines].dig(line, :rides).to_i %>
+        <div class="line-pill-cell">
+          <% if rides.positive? %>
+            <% colors = Ride.color_for(line) %>
+            <div class="line-pill" style="background:<%= colors[:bg] %>; color:<%= colors[:text] %>;"><%= line %></div>
+            <div class="line-pill-count"><%= rides %> <%= rides == 1 ? 'resa' : 'resor' %></div>
+          <% else %>
+            <div class="line-pill line-pill-pending"><%= line %></div>
+            <div class="line-pill-count">ej riden</div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <% segments = donut_segments(@stats[:lines]) %>
+  <% if segments.any? %>
+    <div class="card donut-card">
+      <div>
+        <h3 style="margin-bottom:0.15rem;">Fördelning per linje</h3>
+        <p class="muted" style="font-size:0.82rem; margin-bottom:1rem;">Andel av alla resor, vanligaste linjerna</p>
+        <div class="donut-wrap">
+          <svg viewBox="0 0 168 168" width="168" height="168">
+            <% segments.each do |seg| %>
+              <circle
+                cx="84" cy="84" r="66"
+                fill="none"
+                stroke="<%= seg[:bg] %>"
+                stroke-width="22"
+                stroke-dasharray="<%= seg[:dasharray] %>"
+                stroke-dashoffset="<%= seg[:dashoffset] %>"
+                transform="rotate(-90 84 84)"
+                class="donut-seg"
+              >
+                <title><%= seg[:label] %> · <%= seg[:rides] %> resor (<%= seg[:percent] %>%)</title>
+              </circle>
+            <% end %>
+          </svg>
+          <div class="donut-center">
+            <div class="donut-center-value"><%= @stats[:total_rides] %></div>
+            <div class="donut-center-label">resor totalt</div>
+          </div>
+        </div>
+      </div>
+      <div class="donut-legend">
+        <% segments.each do |seg| %>
+          <div class="donut-legend-row">
+            <span class="donut-swatch" style="background:<%= seg[:bg] %>;"></span>
+            <span class="donut-legend-name">
+              <%= seg[:label] %><% if seg[:sub] %><span class="donut-legend-sub"> (linje <%= seg[:sub] %>)</span><% end %>
+            </span>
+            <span class="donut-legend-value"><%= seg[:rides] %> · <%= seg[:percent] %>%</span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="card">
+    <h3 style="margin-bottom:0.15rem;">Fordonssamling</h3>
+    <% ridden_trams = @stats[:models].sum { |m| m[:ridden] } %>
+    <% total_trams  = @stats[:models].sum { |m| m[:total] } %>
+    <p class="muted" style="font-size:0.82rem; margin-bottom:1rem;">Ridna spårvagnar per modell — <%= ridden_trams %> av <%= total_trams %> totalt</p>
+    <div class="model-progress-list">
+      <% @stats[:models].each do |model| %>
+        <% complete = model[:total].positive? && model[:ridden] == model[:total] %>
+        <% percent  = model[:total].positive? ? (model[:ridden].to_f / model[:total] * 100).round : 0 %>
+        <div>
+          <div class="model-progress-row-head">
+            <span class="model-progress-name">
+              <%= h(model[:name]) %>
+              <% if complete %><span class="badge-complete">Klart</span><% end %>
+            </span>
+            <span class="model-progress-count"><%= model[:ridden] %> / <%= model[:total] %></span>
+          </div>
+          <div class="model-progress-bar">
+            <div class="model-progress-fill<%= ' model-progress-fill--complete' if complete %>" style="width:<%= percent %>%;"></div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-bottom:0.15rem;">Aktivitet över tid</h3>
+    <p class="muted" style="font-size:0.82rem; margin-bottom:0.5rem;">Resor per månad, senaste 12 månaderna</p>
+    <% monthly = @stats[:monthly] %>
+    <% max_rides = monthly.map { |m| m[:rides] }.max.to_i %>
+    <% peak_index = max_rides.positive? ? monthly.each_index.max_by { |i| monthly[i][:rides] } : nil %>
+    <div class="activity-chart-wrap">
+      <div class="activity-grid">
+        <% activity_gridlines(monthly).each do |val| %>
+          <% pct = max_rides.positive? ? (val.to_f / max_rides * 100) : 0 %>
+          <div class="activity-gridline" style="bottom:<%= pct %>%;"><span><%= val %></span></div>
+        <% end %>
+        <% monthly.each_with_index do |m, i| %>
+          <% pct = max_rides.positive? ? (m[:rides].to_f / max_rides * 100) : 0 %>
+          <% peak = i == peak_index %>
+          <div class="activity-bar-col">
+            <% if peak %><div class="activity-bar-peak-label"><%= m[:rides] %></div><% end %>
+            <div class="activity-bar-tooltip"><%= m[:month].strftime('%b %Y') %> · <%= m[:rides] %> <%= m[:rides] == 1 ? 'resa' : 'resor' %></div>
+            <div class="activity-bar<%= ' activity-bar--peak' if peak %>" style="height:<%= pct %>%;"></div>
+          </div>
+        <% end %>
+      </div>
+      <div class="activity-labels">
+        <% monthly.each do |m| %>
+          <div class="activity-label-col"><%= m[:month].strftime('%b') %></div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+<% end %>
