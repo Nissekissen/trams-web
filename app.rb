@@ -13,6 +13,7 @@ class TramsApp < Sinatra::Base
     set :method_override, true
     enable :sessions
     set :session_secret, ENV.fetch('SESSION_SECRET') { SecureRandom.hex(64) }
+    set :sessions, expire_after: 60 * 60 * 24 * 30
   end
 
   # ---------------------------------------------------------------
