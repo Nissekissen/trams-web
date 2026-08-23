@@ -75,6 +75,10 @@ class User < ActiveRecord::Base
     user
   end
 
+  def self.verify_apple_id_token(id_token)
+
+  end
+
   def to_api_hash
 
     {
