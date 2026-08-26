@@ -40,8 +40,7 @@ class TramsApp < Sinatra::Base
       path == '/' ? request.path_info == '/' : request.path_info.start_with?(path)
     end
 
-    # Ranks lines by ride count, keeps the top 6, and folds the remainder into
-    # an "Övriga linjer" segment. Returns each segment with pre-computed SVG
+    # Ranks lines by ride count. Returns each segment with pre-computed SVG
     # stroke-dasharray/dashoffset so the view can render a donut without JS.
     def donut_segments(lines, radius: 66)
       ranked = lines.map { |num, data| { line: num, rides: data[:rides] } }
@@ -49,23 +48,9 @@ class TramsApp < Sinatra::Base
                     .sort_by { |d| -d[:rides] }
       return [] if ranked.empty?
 
-      top  = ranked.first(6)
-      rest = ranked.drop(6)
-
-      segments = top.map do |d|
+      segments = ranked.map do |d|
         colors = Ride.color_for(d[:line])
         { label: "Linje #{d[:line]}", rides: d[:rides], bg: colors[:bg], fg: colors[:text], sub: nil }
-      end
-
-      rest_total = rest.sum { |d| d[:rides] }
-      if rest_total.positive?
-        segments << {
-          label: 'Övriga linjer',
-          rides: rest_total,
-          bg: '#b9b3a6',
-          fg: '#2a2723',
-          sub: rest.map { |d| d[:line] }.join(', ')
-        }
       end
 
       total = segments.sum { |s| s[:rides] }

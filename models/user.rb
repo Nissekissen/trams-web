@@ -98,4 +98,38 @@ class User < ActiveRecord::Base
       ridesThisWeek: rides.where('ridden_on >= ?', week_start).count
     }
   end
+
+  def detailed_stats
+    ridden_by_tram_id = rides.joins(tram: :model).group('models.id').distinct.count(:tram_id)
+    total_by_tram_id  = Tram.group(:model_id).count
+
+    ride_dates = rides.pluck(:ridden_on)
+    counts_by_month = ride_dates.group_by(&:beginning_of_month).transform_values(&:size)
+
+    months = (0..11).map { |i| Date.today.beginning_of_month << i }.reverse
+    months = months.map { |month| { month: month, rides: counts_by_month.fetch(month, 0) } }
+
+    counts = rides.group(:line).count
+
+    {
+      since: rides.minimum(:ridden_on),
+      total_rides: rides.count,
+      lines: Ride::LINES.each_with_object({}) do |line, hash|
+        hash[line] = { rides: counts.fetch(line, 0) }
+      end,
+      models: Model.order(:name).map do |model|
+        {
+          name: model.name,
+          ridden: ridden_by_tram_id.fetch(model.id, 0),
+          total: total_by_tram_id.fetch(model.id, 0)
+        }
+      end,
+      monthly: months,
+      highlights: {
+      #   top_line: { line: 3, rides: 14 },
+      #   longest_streak: { days: 6, from: Date, to: Date },
+      #   last_ride: { date: Date, line: 4, tram_number: "344" }
+      }
+    }
+  end
 end

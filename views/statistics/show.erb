@@ -25,7 +25,7 @@
 
   <div class="highlight-row">
     <div class="highlight-card">
-      <div class="highlight-label">Mest ridna linjen</div>
+      <div class="highlight-label">Mest åkta linjen</div>
       <% if @stats[:highlights][:top_line] %>
         <div class="highlight-value">Linje <%= @stats[:highlights][:top_line][:line] %></div>
         <div class="highlight-sub"><%= @stats[:highlights][:top_line][:rides] %> resor</div>
@@ -61,8 +61,7 @@
       <% ridden_line_count = @stats[:lines].count { |_, d| d[:rides].positive? } %>
       <span class="mono muted" style="font-size:0.8rem;"><%= ridden_line_count %> / <%= Ride::LINES.size %></span>
     </div>
-    <p class="muted" style="font-size:0.85rem; margin-bottom:1rem;">Antal resor per linje.</p>
-    <div class="line-pills">
+    <div class="line-pills" style="margin-top:1rem;">
       <% Ride::LINES.each do |line| %>
         <% rides = @stats[:lines].dig(line, :rides).to_i %>
         <div class="line-pill-cell">
@@ -83,16 +82,26 @@
   <% if segments.any? %>
     <div class="card donut-card">
       <div>
-        <h3 style="margin-bottom:0.15rem;">Fördelning per linje</h3>
-        <p class="muted" style="font-size:0.82rem; margin-bottom:1rem;">Andel av alla resor, vanligaste linjerna</p>
+        <h3 style="margin-bottom:1rem;">Fördelning per linje</h3>
         <div class="donut-wrap">
           <svg viewBox="0 0 168 168" width="168" height="168">
             <% segments.each do |seg| %>
               <circle
                 cx="84" cy="84" r="66"
                 fill="none"
+                stroke="#1a1a1a"
+                stroke-width="24"
+                stroke-dasharray="<%= seg[:dasharray] %>"
+                stroke-dashoffset="<%= seg[:dashoffset] %>"
+                transform="rotate(-90 84 84)"
+              />
+            <% end %>
+            <% segments.each do |seg| %>
+              <circle
+                cx="84" cy="84" r="66"
+                fill="none"
                 stroke="<%= seg[:bg] %>"
-                stroke-width="22"
+                stroke-width="20"
                 stroke-dasharray="<%= seg[:dasharray] %>"
                 stroke-dashoffset="<%= seg[:dashoffset] %>"
                 transform="rotate(-90 84 84)"
@@ -123,10 +132,9 @@
   <% end %>
 
   <div class="card">
-    <h3 style="margin-bottom:0.15rem;">Fordonssamling</h3>
     <% ridden_trams = @stats[:models].sum { |m| m[:ridden] } %>
     <% total_trams  = @stats[:models].sum { |m| m[:total] } %>
-    <p class="muted" style="font-size:0.82rem; margin-bottom:1rem;">Ridna spårvagnar per modell — <%= ridden_trams %> av <%= total_trams %> totalt</p>
+    <h3 style="margin-bottom:1rem;">Fordonssamling <span class="muted">(<%= ridden_trams %>/<%= total_trams %>)</span></h3>
     <div class="model-progress-list">
       <% @stats[:models].each do |model| %>
         <% complete = model[:total].positive? && model[:ridden] == model[:total] %>
@@ -148,8 +156,7 @@
   </div>
 
   <div class="card">
-    <h3 style="margin-bottom:0.15rem;">Aktivitet över tid</h3>
-    <p class="muted" style="font-size:0.82rem; margin-bottom:0.5rem;">Resor per månad, senaste 12 månaderna</p>
+    <h3 style="margin-bottom:1rem;">Aktivitet över tid</h3>
     <% monthly = @stats[:monthly] %>
     <% max_rides = monthly.map { |m| m[:rides] }.max.to_i %>
     <% peak_index = max_rides.positive? ? monthly.each_index.max_by { |i| monthly[i][:rides] } : nil %>
