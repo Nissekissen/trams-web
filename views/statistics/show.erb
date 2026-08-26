@@ -55,81 +55,72 @@
     </div>
   </div>
 
-  <div class="card">
-    <div class="progress-header">
-      <h3>Linjetäckning</h3>
-      <% ridden_line_count = @stats[:lines].count { |_, d| d[:rides].positive? } %>
-      <span class="mono muted" style="font-size:0.8rem;"><%= ridden_line_count %> / <%= Ride::LINES.size %></span>
-    </div>
-    <div class="line-pills" style="margin-top:1rem;">
-      <% Ride::LINES.each do |line| %>
-        <% rides = @stats[:lines].dig(line, :rides).to_i %>
-        <div class="line-pill-cell">
-          <% if rides.positive? %>
-            <% colors = Ride.color_for(line) %>
-            <div class="line-pill" style="background:<%= colors[:bg] %>; color:<%= colors[:text] %>;"><%= line %></div>
-            <div class="line-pill-count"><%= rides %> <%= rides == 1 ? 'resa' : 'resor' %></div>
-          <% else %>
-            <div class="line-pill line-pill-pending"><%= line %></div>
-            <div class="line-pill-count">ej riden</div>
-          <% end %>
-        </div>
-      <% end %>
-    </div>
-  </div>
-
   <% segments = donut_segments(@stats[:lines]) %>
-  <% if segments.any? %>
-    <div class="card donut-card">
-      <div>
-        <h3 style="margin-bottom:1rem;">Fördelning per linje</h3>
-        <div class="donut-wrap">
-          <svg viewBox="0 0 168 168" width="168" height="168">
-            <% segments.each do |seg| %>
-              <circle
-                cx="84" cy="84" r="66"
-                fill="none"
-                stroke="#1a1a1a"
-                stroke-width="24"
-                stroke-dasharray="<%= seg[:dasharray] %>"
-                stroke-dashoffset="<%= seg[:dashoffset] %>"
-                transform="rotate(-90 84 84)"
-              />
-            <% end %>
-            <% segments.each do |seg| %>
-              <circle
-                cx="84" cy="84" r="66"
-                fill="none"
-                stroke="<%= seg[:bg] %>"
-                stroke-width="20"
-                stroke-dasharray="<%= seg[:dasharray] %>"
-                stroke-dashoffset="<%= seg[:dashoffset] %>"
-                transform="rotate(-90 84 84)"
-                class="donut-seg"
-              >
-                <title><%= seg[:label] %> · <%= seg[:rides] %> resor (<%= seg[:percent] %>%)</title>
-              </circle>
-            <% end %>
-          </svg>
-          <div class="donut-center">
-            <div class="donut-center-value"><%= @stats[:total_rides] %></div>
-            <div class="donut-center-label">resor totalt</div>
-          </div>
-        </div>
+  <% percent_by_line = segments.each_with_object({}) { |seg, h| h[seg[:line]] = seg[:percent] } %>
+
+  <div class="card donut-card">
+    <div class="donut-card-main">
+      <div class="progress-header">
+        <h3>Linjetäckning</h3>
+        <% ridden_line_count = @stats[:lines].count { |_, d| d[:rides].positive? } %>
+        <span class="mono muted" style="font-size:0.8rem;"><%= ridden_line_count %> / <%= Ride::LINES.size %></span>
       </div>
-      <div class="donut-legend">
-        <% segments.each do |seg| %>
-          <div class="donut-legend-row">
-            <span class="donut-swatch" style="background:<%= seg[:bg] %>;"></span>
-            <span class="donut-legend-name">
-              <%= seg[:label] %><% if seg[:sub] %><span class="donut-legend-sub"> (linje <%= seg[:sub] %>)</span><% end %>
-            </span>
-            <span class="donut-legend-value"><%= seg[:rides] %> · <%= seg[:percent] %>%</span>
+      <div class="stat-line-grid" style="margin-top:1rem;">
+        <% Ride::LINES.each do |line| %>
+          <% rides = @stats[:lines].dig(line, :rides).to_i %>
+          <div class="stat-line-cell">
+            <% if rides.positive? %>
+              <% colors = Ride.color_for(line) %>
+              <div class="line-pill" style="background:<%= colors[:bg] %>; color:<%= colors[:text] %>;"><%= line %></div>
+              <div class="stat-line-meta">
+                <span class="stat-line-rides"><%= rides %> <%= rides == 1 ? 'resa' : 'resor' %></span>
+                <span class="stat-line-percent"><%= percent_by_line[line] %>%</span>
+              </div>
+            <% else %>
+              <div class="line-pill line-pill-pending"><%= line %></div>
+              <span class="stat-line-pending-label">ej riden</span>
+            <% end %>
           </div>
         <% end %>
       </div>
     </div>
-  <% end %>
+
+    <% if segments.any? %>
+      <div class="donut-wrap">
+        <svg viewBox="0 0 168 168" width="168" height="168">
+          <% segments.each do |seg| %>
+            <circle
+              cx="84" cy="84" r="66"
+              fill="none"
+              stroke="#1a1a1a"
+              stroke-width="24"
+              stroke-dasharray="<%= seg[:dasharray] %>"
+              stroke-dashoffset="<%= seg[:dashoffset] %>"
+              transform="rotate(-90 84 84)"
+            />
+          <% end %>
+          <% segments.each do |seg| %>
+            <circle
+              cx="84" cy="84" r="66"
+              fill="none"
+              stroke="<%= seg[:bg] %>"
+              stroke-width="20"
+              stroke-dasharray="<%= seg[:dasharray] %>"
+              stroke-dashoffset="<%= seg[:dashoffset] %>"
+              transform="rotate(-90 84 84)"
+              class="donut-seg"
+            >
+              <title>Linje <%= seg[:line] %> · <%= seg[:rides] %> resor (<%= seg[:percent] %>%)</title>
+            </circle>
+          <% end %>
+        </svg>
+        <div class="donut-center">
+          <div class="donut-center-value"><%= @stats[:total_rides] %></div>
+          <div class="donut-center-label">resor totalt</div>
+        </div>
+      </div>
+    <% end %>
+  </div>
 
   <div class="card">
     <% ridden_trams = @stats[:models].sum { |m| m[:ridden] } %>
@@ -149,8 +140,7 @@
           </div>
           <div class="model-progress-bar">
             <div class="model-progress-fill<%= ' model-progress-fill--complete' if complete %>" style="width:<%= percent %>%;"></div>
-          </div>
-        </div>
+          </div> </div>
       <% end %>
     </div>
   </div>
@@ -171,7 +161,6 @@
           <% peak = i == peak_index %>
           <div class="activity-bar-col">
             <% if peak %><div class="activity-bar-peak-label"><%= m[:rides] %></div><% end %>
-            <div class="activity-bar-tooltip"><%= m[:month].strftime('%b %Y') %> · <%= m[:rides] %> <%= m[:rides] == 1 ? 'resa' : 'resor' %></div>
             <div class="activity-bar<%= ' activity-bar--peak' if peak %>" style="height:<%= pct %>%;"></div>
           </div>
         <% end %>

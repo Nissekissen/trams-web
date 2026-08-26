@@ -12,7 +12,11 @@ class TramsApp < Sinatra::Base
     set :public_folder, File.join(ROOT, 'public')
     set :method_override, true
     enable :sessions
-    set :session_secret, ENV.fetch('SESSION_SECRET') { SecureRandom.hex(64) }
+    # In production, a missing SESSION_SECRET must crash the boot, not silently
+    # mint a fresh one — a fresh secret invalidates every signed session cookie,
+    # logging everyone out on every restart/deploy. Dev/test keep the random
+    # fallback since no persistent secret is configured for them.
+    set :session_secret, APP_ENV == 'production' ? ENV.fetch('SESSION_SECRET') : ENV.fetch('SESSION_SECRET') { SecureRandom.hex(64) }
     set :sessions, expire_after: 60 * 60 * 24 * 30
   end
 
@@ -50,7 +54,7 @@ class TramsApp < Sinatra::Base
 
       segments = ranked.map do |d|
         colors = Ride.color_for(d[:line])
-        { label: "Linje #{d[:line]}", rides: d[:rides], bg: colors[:bg], fg: colors[:text], sub: nil }
+        { line: d[:line], rides: d[:rides], bg: colors[:bg] }
       end
 
       total = segments.sum { |s| s[:rides] }
