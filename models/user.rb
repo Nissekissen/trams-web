@@ -111,6 +111,16 @@ class User < ActiveRecord::Base
 
     counts = rides.group(:line).count
 
+    top_line = counts.max_by { |_, rides_count| rides_count }
+                     &.then { |line, rides_count| { line: line, rides: rides_count } }
+
+    last_ride_record = rides.includes(:tram).order(ridden_on: :desc, created_at: :desc).first
+    last_ride = last_ride_record && {
+      date: last_ride_record.ridden_on,
+      line: last_ride_record.line,
+      tram_number: last_ride_record.tram.number
+    }
+
     {
       since: rides.minimum(:ridden_on),
       total_rides: rides.count,
@@ -126,10 +136,34 @@ class User < ActiveRecord::Base
       end,
       monthly: months,
       highlights: {
-      #   top_line: { line: 3, rides: 14 },
-      #   longest_streak: { days: 6, from: Date, to: Date },
-      #   last_ride: { date: Date, line: 4, tram_number: "344" }
+        top_line: top_line,
+        longest_streak: longest_ride_streak(ride_dates),
+        last_ride: last_ride
       }
     }
+  end
+
+  private
+
+  # Longest run of consecutive calendar days with at least one ride, any line.
+  def longest_ride_streak(ride_dates)
+    days = ride_dates.uniq.sort
+    return nil if days.empty?
+
+    streaks = []
+    streak_start = streak_end = days.first
+
+    days.each_cons(2) do |previous_day, day|
+      if day == previous_day + 1
+        streak_end = day
+      else
+        streaks << [streak_start, streak_end]
+        streak_start = streak_end = day
+      end
+    end
+    streaks << [streak_start, streak_end]
+
+    best_start, best_end = streaks.max_by { |start_day, end_day| end_day - start_day }
+    { days: (best_end - best_start).to_i + 1, from: best_start, to: best_end }
   end
 end
