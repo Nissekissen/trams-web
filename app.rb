@@ -134,6 +134,39 @@ class TramsApp < Sinatra::Base
   end
 
   # ---------------------------------------------------------------
+  # Rides
+  # ---------------------------------------------------------------
+  get '/rides' do
+    require_login
+
+    @models = Model.order(:name)
+    @selected_lines = Array(params[:lines]).map(&:to_i).select { |line| Ride::LINES.include?(line) }
+    @selected_model_ids = Array(params[:model_ids]).map(&:to_i)
+    @from = params[:from]
+    @to = params[:to]
+    @filters_active = @selected_lines.any? || @selected_model_ids.any? || @from.present? || @to.present?
+
+    scope = Ride.where(user_id: current_user.id)
+    scope = scope.where(line: @selected_lines) if @selected_lines.any?
+    scope = scope.joins(:tram).where(trams: { model_id: @selected_model_ids }) if @selected_model_ids.any?
+    scope = scope.where('ridden_on >= ?', @from) if @from.present?
+    scope = scope.where('ridden_on <= ?', @to) if @to.present?
+
+    per_page = 20
+    @total_count = scope.count
+    @total_pages = [(@total_count / per_page.to_f).ceil, 1].max
+    @page = [params[:page].to_i, 1].max
+    @page = @total_pages if @page > @total_pages
+
+    @rides = scope.includes(tram: :model)
+                  .order(ridden_on: :desc, id: :desc)
+                  .offset((@page - 1) * per_page)
+                  .limit(per_page)
+
+    erb :'rides/index'
+  end
+
+  # ---------------------------------------------------------------
   # Trams
   # ---------------------------------------------------------------
   namespace '/admin' do
@@ -421,9 +454,17 @@ class TramsApp < Sinatra::Base
   delete '/rides/:id' do
     require_login
     ride = Ride.find(params['id'])
-    halt 401 if ride.user_id != @current_user.id && !@current_user.is_admin
+    halt 401 if ride.user_id != current_user.id && !current_user.is_admin
     tram_id = ride.tram_id
     ride.destroy
-    redirect "/trams/#{tram_id}"
+
+    redirect_to = params['redirect_to']
+    if redirect_to && redirect_to.start_with?('/') && !redirect_to.start_with?('//')
+      status 302
+      headers['Location'] = redirect_to
+      halt
+    else
+      redirect "/trams/#{tram_id}"
+    end
   end
 end

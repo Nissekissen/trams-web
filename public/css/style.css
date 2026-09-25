@@ -378,7 +378,7 @@ label {
     margin-bottom: 0.3rem;
     margin-top: 1rem;
 }
-label:first-child {
+label:not(.model-filter-pill):not(.line-filter-pill):first-child {
     margin-top: 0;
 }
 
@@ -1941,4 +1941,300 @@ body.landing-page {
     text-align: center;
     padding: 1rem 0 0.5rem;
     color: var(--color-muted);
+}
+
+/* ---------- Manage rides page ---------- */
+
+.page-lede {
+    color: var(--color-muted);
+    max-width: 52ch;
+    margin: 0 0 1.75rem;
+    font-size: 0.94rem;
+}
+
+.filter-panel {
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius);
+    padding: 1.1rem 1.25rem 1.25rem;
+    margin-bottom: 1.5rem;
+}
+.filter-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+.filter-row:last-child {
+    margin-bottom: 0;
+}
+.filter-label {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-muted);
+}
+.filter-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+}
+
+.line-filter-pill {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    border-radius: 7px;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.82rem;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    opacity: 0.45;
+    transition:
+        opacity 120ms ease,
+        border-color 120ms ease;
+}
+.line-filter-pill input[type="checkbox"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    margin: 0;
+    cursor: pointer;
+}
+.line-filter-pill:hover {
+    opacity: 0.8;
+}
+.line-filter-pill:has(input:checked) {
+    opacity: 1;
+    border-color: #1a1a1a;
+}
+
+.date-range {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+.date-range input[type="date"] {
+    width: auto;
+}
+.date-range span {
+    color: var(--color-muted);
+    font-size: 0.85rem;
+}
+
+.filter-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 1.1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-line);
+}
+.filter-count {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--color-muted);
+}
+.filter-count strong {
+    color: var(--color-ink);
+    font-weight: 500;
+}
+.clear-filters {
+    font-size: 0.82rem;
+    color: var(--color-muted);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+.clear-filters:hover {
+    color: var(--color-accent);
+}
+
+.month-group {
+    margin-bottom: 1.6rem;
+}
+.month-label {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    margin-bottom: 0.6rem;
+}
+.ride-list {
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+.ride-row {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 0.65rem 1rem;
+    border-bottom: 1px solid var(--color-line);
+}
+.ride-row:last-child {
+    border-bottom: none;
+}
+
+.ride-line-pill {
+    flex-shrink: 0;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 6px;
+    border: 1.5px solid #1a1a1a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.72rem;
+}
+
+.ride-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 0;
+}
+.ride-num {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+.ride-model {
+    font-size: 0.75rem;
+    color: var(--color-muted);
+}
+
+.ride-date {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--color-muted);
+    flex-shrink: 0;
+    width: 4.7rem;
+}
+
+.ride-actions {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
+
+.btn-delete {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: 0.8rem;
+    padding: 0.35rem 0.7rem;
+    border-radius: 7px;
+    border: 1px solid var(--color-line);
+    background: var(--color-surface);
+    color: #8a3a3a;
+    cursor: pointer;
+}
+.btn-delete:hover {
+    background: #fbeceb;
+    border-color: #c0392b;
+}
+.btn-delete svg {
+    width: 14px;
+    height: 14px;
+}
+
+.confirm-row {
+    display: none;
+    align-items: center;
+    gap: 0.6rem;
+    flex-shrink: 0;
+    font-size: 0.82rem;
+    color: var(--color-muted);
+}
+.ride-row.is-confirming .ride-actions {
+    display: none;
+}
+.ride-row.is-confirming .confirm-row {
+    display: flex;
+}
+
+.btn-confirm-cancel,
+.btn-confirm-delete {
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: 0.8rem;
+    padding: 0.35rem 0.65rem;
+    border-radius: 7px;
+    cursor: pointer;
+    border: 1px solid var(--color-line);
+}
+.btn-confirm-cancel {
+    background: var(--color-surface);
+    color: var(--color-ink);
+}
+.btn-confirm-cancel:hover {
+    background: var(--color-bg);
+}
+.btn-confirm-delete {
+    background: #c0392b;
+    color: #fff;
+    border-color: #c0392b;
+}
+.btn-confirm-delete:hover {
+    opacity: 0.9;
+}
+
+.pager {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.25rem;
+}
+.pager-info {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--color-muted);
+}
+.btn-more {
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+    border-radius: 100px;
+    border: 1px solid var(--color-line);
+    background: var(--color-surface);
+    color: var(--color-ink);
+    cursor: pointer;
+}
+.btn-more:hover {
+    background: var(--color-accent-soft);
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+.btn-more:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+.btn-more:disabled:hover {
+    background: var(--color-surface);
+    border-color: var(--color-line);
+    color: var(--color-ink);
+}
+
+@media (max-width: 760px) {
+    .ride-model {
+        display: none;
+    }
+    .ride-date {
+        width: auto;
+    }
 }

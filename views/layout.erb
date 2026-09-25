@@ -25,6 +25,7 @@
       <ul class="nav-list">
         <li><a href="/" class="<%= 'active' if nav_active?('/') %>">Hem</a></li>
         <li><a href="/trams" class="<%= 'active' if nav_active?('/trams') %>">Spårvagnar</a></li>
+        <li><a href="/rides" class="<%= 'active' if nav_active?('/rides') %>">Mina resor</a></li>
         <li><a href="/profile" class="<%= 'active' if nav_active?('/profile') %>">Profil</a></li>
         <% if logged_in? && current_user.is_admin %>
           <li><a href="/admin/trams" class="<%= 'active' if nav_active?('/admin') %>">Admin</a></li>
@@ -51,6 +52,10 @@
         <a href="/trams" class="bottom-nav-item <%= 'bottom-nav-item--active' if nav_active?('/trams') %>">
           <i class="ti ti-train" aria-hidden="true"></i>
           <span>Spårvagnar</span>
+        </a>
+        <a href="/rides" class="bottom-nav-item <%= 'bottom-nav-item--active' if nav_active?('/rides') %>">
+          <i class="ti ti-history" aria-hidden="true"></i>
+          <span>Resor</span>
         </a>
         <a href="/profile" class="bottom-nav-item <%= 'bottom-nav-item--active' if nav_active?('/profile') %>">
           <i class="ti ti-user" aria-hidden="true"></i>

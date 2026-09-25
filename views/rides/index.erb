@@ -1,0 +1,127 @@
+<div class="page-header">
+  <div>
+    <div class="eyebrow">Resor</div>
+    <h1>Mina resor</h1>
+  </div>
+</div>
+<p class="page-lede">Alla resor du loggat, samlade på ett ställe. Filtrera på linje, modell eller datum och ta bort felaktiga registreringar.</p>
+
+<form method="get" action="/rides" class="filter-panel">
+  <div class="filter-row">
+    <div class="filter-label">Linje</div>
+    <div class="filter-pills">
+      <% Ride::LINES.each do |line| %>
+        <% colors = Ride.color_for(line) %>
+        <label class="line-filter-pill" style="background:<%= colors[:bg] %>; color:<%= colors[:text] %>;">
+          <input type="checkbox" name="lines[]" value="<%= line %>"
+                 <%= 'checked' if @selected_lines.include?(line) %>
+                 onchange="this.form.submit()">
+          <%= line %>
+        </label>
+      <% end %>
+    </div>
+  </div>
+
+  <% if @models.any? %>
+    <div class="filter-row">
+      <div class="filter-label">Modell</div>
+      <div class="filter-pills">
+        <% @models.each do |model| %>
+          <label class="model-filter-pill">
+            <input type="checkbox" name="model_ids[]" value="<%= model.id %>"
+                   <%= 'checked' if @selected_model_ids.include?(model.id) %>
+                   onchange="this.form.submit()">
+            <%= h(model.name) %>
+          </label>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="filter-row">
+    <div class="filter-label">Datum</div>
+    <div class="date-range">
+      <input type="date" name="from" value="<%= @from %>" onchange="this.form.submit()" aria-label="Från datum">
+      <span>till</span>
+      <input type="date" name="to" value="<%= @to %>" onchange="this.form.submit()" aria-label="Till datum">
+    </div>
+  </div>
+
+  <div class="filter-footer">
+    <div class="filter-count"><strong><%= @total_count %></strong> <%= @total_count == 1 ? 'resa' : 'resor' %></div>
+    <% if @filters_active %>
+      <a href="/rides" class="clear-filters">Rensa filter</a>
+    <% end %>
+  </div>
+</form>
+
+<% if @rides.empty? %>
+  <div class="empty-state">
+    <% if @filters_active %>
+      <p>Inga resor matchar filtren.</p>
+      <a href="/rides" class="clear-filters">Rensa filter</a>
+    <% else %>
+      <p>Du har inte loggat några resor än.</p>
+    <% end %>
+  </div>
+<% else %>
+  <% @rides.group_by { |ride| ride.ridden_on.beginning_of_month }.each do |month, month_rides| %>
+    <div class="month-group">
+      <div class="month-label"><%= month.strftime('%B %Y') %></div>
+      <div class="ride-list">
+        <% month_rides.each do |ride| %>
+          <% colors = Ride.color_for(ride.line) %>
+          <div class="ride-row">
+            <div class="ride-line-pill" style="background:<%= colors[:bg] %>; color:<%= colors[:text] %>;"><%= ride.line %></div>
+            <div class="ride-info">
+              <span class="ride-num"><%= h(ride.tram.number) %></span>
+              <span class="ride-model"><%= h(ride.tram.model.name) %></span>
+            </div>
+            <div class="ride-date"><%= ride.ridden_on.strftime('%-d %b') %></div>
+            <div class="ride-actions">
+              <button type="button" class="btn-delete" data-action="request-delete">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                Ta bort
+              </button>
+            </div>
+            <form method="post" action="/rides/<%= ride.id %>" class="confirm-row">
+              <input type="hidden" name="_method" value="DELETE">
+              <input type="hidden" name="redirect_to" value="<%= h(request.fullpath) %>">
+              <span>Ta bort?</span>
+              <button type="button" class="btn-confirm-cancel" data-action="cancel-delete">Avbryt</button>
+              <button type="submit" class="btn-confirm-delete">Ta bort</button>
+            </form>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <% if @total_pages > 1 %>
+    <form method="get" action="/rides" class="pager">
+      <% @selected_lines.each do |line| %><input type="hidden" name="lines[]" value="<%= line %>"><% end %>
+      <% @selected_model_ids.each do |model_id| %><input type="hidden" name="model_ids[]" value="<%= model_id %>"><% end %>
+      <input type="hidden" name="from" value="<%= @from %>">
+      <input type="hidden" name="to" value="<%= @to %>">
+      <button type="submit" name="page" value="<%= @page - 1 %>" class="btn-more" <%= 'disabled' if @page <= 1 %>>&larr; Föregående</button>
+      <span class="pager-info">Sida <%= @page %> av <%= @total_pages %></span>
+      <button type="submit" name="page" value="<%= @page + 1 %>" class="btn-more" <%= 'disabled' if @page >= @total_pages %>>Nästa &rarr;</button>
+    </form>
+  <% end %>
+<% end %>
+
+<script>
+(function () {
+  document.querySelectorAll('.ride-list').forEach(function (list) {
+    list.addEventListener('click', function (e) {
+      var row = e.target.closest('.ride-row');
+      if (!row) return;
+      if (e.target.closest('[data-action="request-delete"]')) {
+        row.classList.add('is-confirming');
+      } else if (e.target.closest('[data-action="cancel-delete"]')) {
+        row.classList.remove('is-confirming');
+      }
+    });
+  });
+})();
+</script>
