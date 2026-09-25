@@ -2238,3 +2238,149 @@ body.landing-page {
         width: auto;
     }
 }
+
+/* ---------- Admin: section tabs ---------- */
+
+.admin-tabs {
+    display: flex;
+    gap: 1.25rem;
+    border-bottom: 1px solid var(--color-line);
+    margin-bottom: 1.5rem;
+}
+.admin-tab {
+    font-size: 0.88rem;
+    color: var(--color-muted);
+    padding: 0.1rem 0.1rem 0.65rem;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+}
+.admin-tab:hover {
+    color: var(--color-ink);
+    text-decoration: none;
+}
+.admin-tab.active {
+    color: var(--color-ink);
+    font-weight: 500;
+    border-color: var(--color-accent);
+}
+
+/* ---------- Admin: users ---------- */
+
+.account-count {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--color-muted);
+    white-space: nowrap;
+}
+.account-count strong {
+    color: var(--color-ink);
+    font-weight: 500;
+}
+
+.user-list {
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+.user-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.25rem;
+    padding: 0.85rem 1.25rem;
+    border-bottom: 1px solid var(--color-line);
+}
+.user-row:last-child {
+    border-bottom: none;
+}
+
+.user-id {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    min-width: 0;
+}
+
+.avatar {
+    flex-shrink: 0;
+    width: 2.15rem;
+    height: 2.15rem;
+    border-radius: 50%;
+    background: var(--color-accent-soft);
+    color: var(--color-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.78rem;
+}
+
+.user-meta {
+    min-width: 0;
+}
+.user-name {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.user-email {
+    font-size: 0.78rem;
+    color: var(--color-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 4.2rem);
+    gap: 0 1.25rem;
+    flex-shrink: 0;
+}
+.user-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    text-align: right;
+}
+.user-stat-value {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.05rem;
+    line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+}
+.user-stat-label {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-muted);
+    margin-top: 0.1rem;
+}
+
+.desktop-only-notice {
+    display: none;
+}
+
+@media (max-width: 760px) {
+    .admin-desktop-only {
+        display: none;
+    }
+    .desktop-only-notice {
+        display: block;
+        border: 1px dashed var(--color-line);
+        border-radius: var(--radius);
+        padding: 1rem 1.1rem;
+        color: var(--color-muted);
+        font-size: 0.88rem;
+    }
+}

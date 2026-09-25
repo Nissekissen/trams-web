@@ -28,6 +28,10 @@ class TramsApp < Sinatra::Base
       Rack::Utils.escape_html(text.to_s)
     end
 
+    def initials(name)
+      name.to_s.split.first(2).map { |word| word[0] }.join.upcase
+    end
+
     def current_user
       @current_user ||= User.find_by(id: session[:user_id])
     end
@@ -173,7 +177,6 @@ class TramsApp < Sinatra::Base
 
     before '/*' do
       require_login
-      p current_user.is_admin
       redirect '/' unless current_user.is_admin
     end
 
@@ -226,6 +229,23 @@ class TramsApp < Sinatra::Base
     delete '/trams/:id' do
       Tram.find(params['id']).destroy
       redirect '/admin/trams'
+    end
+
+    get '/users' do
+      @users = User.ordered
+      ride_counts = Ride.group(:user_id).count
+      tram_counts = Ride.group(:user_id).distinct.count(:tram_id)
+      line_counts = Ride.group(:user_id).distinct.count(:line)
+
+      @stats_by_user = @users.each_with_object({}) do |user, hash|
+        hash[user.id] = {
+          rides: ride_counts.fetch(user.id, 0),
+          trams: tram_counts.fetch(user.id, 0),
+          lines: line_counts.fetch(user.id, 0)
+        }
+      end
+
+      erb :'admin/users/index'
     end
 
   end

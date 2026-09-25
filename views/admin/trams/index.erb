@@ -9,6 +9,11 @@
   </div>
 </div>
 
+<div class="admin-tabs">
+  <a href="/admin/trams" class="admin-tab active">Spårvagnar</a>
+  <a href="/admin/users" class="admin-tab">Användare</a>
+</div>
+
 <% if @models.any? %>
   <form method="get" action="/admin/trams" class="model-filter">
     <input type="hidden" name="filtered" value="1">

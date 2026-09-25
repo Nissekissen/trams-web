@@ -1,0 +1,54 @@
+<div class="page-header">
+  <div>
+    <div class="eyebrow">Admin</div>
+    <h1>Alla användare</h1>
+  </div>
+  <div class="account-count"><strong><%= @users.size %></strong> <%= @users.size == 1 ? 'konto' : 'konton' %></div>
+</div>
+
+<div class="desktop-only-notice">Den här sidan är byggd för desktop och visas inte i mobilvyn.</div>
+
+<div class="admin-desktop-only">
+  <div class="admin-tabs">
+    <a href="/admin/trams" class="admin-tab">Spårvagnar</a>
+    <a href="/admin/users" class="admin-tab active">Användare</a>
+  </div>
+
+  <% if @users.empty? %>
+    <div class="empty-state">
+      <p>Inga användare att visa.</p>
+    </div>
+  <% else %>
+    <div class="user-list">
+      <% @users.each do |user| %>
+        <% stats = @stats_by_user[user.id] %>
+        <div class="user-row">
+          <div class="user-id">
+            <div class="avatar"><%= initials(user.name) %></div>
+            <div class="user-meta">
+              <div class="user-name">
+                <%= h(user.name) %>
+                <% if user.is_admin %><span class="badge">Admin</span><% end %>
+              </div>
+              <div class="user-email"><%= h(user.email) %></div>
+            </div>
+          </div>
+          <div class="user-stats">
+            <div class="user-stat">
+              <span class="user-stat-value"><%= stats[:rides] %></span>
+              <span class="user-stat-label">Resor</span>
+            </div>
+            <div class="user-stat">
+              <span class="user-stat-value"><%= stats[:trams] %></span>
+              <span class="user-stat-label">Spårvagnar</span>
+            </div>
+            <div class="user-stat">
+              <span class="user-stat-value"><%= stats[:lines] %>/<%= Ride::LINES.size %></span>
+              <span class="user-stat-label">Linjer</span>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>
